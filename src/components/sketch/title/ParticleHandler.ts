@@ -1,6 +1,7 @@
 import Particle from './Particle'
-import p5Types from "p5"
 import md5 from "md5"
+import * as PIXI from "pixi.js"
+
 
 class ParticleHandler {
     /**
@@ -24,21 +25,21 @@ class ParticleHandler {
     protected height: number
 
     /**
-     * P5 canvas reference
+     * Store frame data
      */
-    protected p5: p5Types
+    protected frameData:  [number, number][]
 
     /**
      * @param p5 P5 canvas reference
      * @param width Width of canvas to handle
      * @param height Height of canvas to handle
      */
-    constructor(p5: p5Types, width: number, height: number) {
+    constructor(width: number, height: number) {
         this.particles = []
         this.width = width
         this.height = height
-        this.p5 = p5
         this.tick = 0
+        this.frameData = []
     }
 
     /**
@@ -48,16 +49,23 @@ class ParticleHandler {
         this.tick++
         for(let particle of this.particles){
             particle.update()
-            particle.aimTowards(this.p5, this.width, this.height)
+            particle.aimTowards(this.width, this.height)
         }
     }
 
     /**
      * Render line against config
      */
+    registerParticles(app: PIXI.Application){
+        this.particles
+            .map(particle => particle.getGraphic())
+            .forEach((particle) => {app.stage.addChild(particle)})
+    }
+
+
     draw(){
         this.particles.forEach((particle) => {
-            particle.draw(this.p5)
+            particle.draw()
         })
     }
 
@@ -68,8 +76,8 @@ class ParticleHandler {
     generateRandomParticles(target: number) {
         for (let i = 0; i < target; i++) {
             this.particles.push(new Particle(
-                this.p5.random(this.width),
-                this.p5.random(this.height)
+                this.random(this.width),
+                this.random(this.height)
             ))
         }
     }
@@ -85,7 +93,6 @@ class ParticleHandler {
         tempImage.src = imagePath
 
         tempImage.onload = () => {
-            console.log("LOADED")
             //Inject a hidden canvas to handle our image loading / processing
             let dataFor = md5(imagePath)
             document.body.insertAdjacentHTML('beforeend', `<canvas style="display: none" data-for="${dataFor}"></canvas>`)
@@ -123,29 +130,15 @@ class ParticleHandler {
             //Free memory reference
             fourths = null;
 
-            let valid_points: [number, number][] = [];
-            for (let y = 0; y < data.length; y++) {
-                for (let x = 0; x < data[0].length; x++) {
-                    if (data[y][x] == 0) {
-                        valid_points.push(this.convertCords(x, y, tempImage.width, tempImage.height));
-                    }
-                }
-            }
+            // Store frame data for future reference
+            this.frameData = data
 
-            //Free memory reference
-            data = null
-
-            for (let i = 0; i < this.particles.length; i++) {
-                console.log([i, new Date().getTime()])
-                let selectedPixel = valid_points[this.p5.round((valid_points.length / this.particles.length) * i)];
-                this.particles[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
-                this.particles[i].overrideForceVector(
-                    (selectedPixel[0]-this.particles[i].x)/30,
-                    (selectedPixel[1]-this.particles[i].y)/30
-                )
-            }
+            // Retarget particles to newly stored frame buffer
+            this.retargetParticles(forceVectorPush)
         }
     }
+
+
 
     /**
      * Converts a coordonate from an arbitrary scale to one fitting the area managed by 
@@ -156,7 +149,76 @@ class ParticleHandler {
      * @returns Converted coordonates
      */
     convertCords(x: number, y: number, xTotal: number, yTotal: number): [number, number] {
-        return [this.p5.round((x / xTotal) * this.width), this.p5.round((y / yTotal) * this.height)];
+        return [Math.round((x / xTotal) * this.width), Math.round((y / yTotal) * this.height)];
+    }
+
+    /**
+     * Destroys all particles managed by handler
+     */
+    destroy(){
+        this.particles.forEach(particle => {particle.destroy()})
+        this.particles = []
+    }
+
+    // Resizes area handled by particle handler
+    resize(width: number, height: number){
+        this.width = width
+        this.height = height
+        this.retargetParticles()
+    }
+
+    /**
+     * Generates a random number between 0 and upper
+     * @param upper 
+     * @returns The random number
+     */
+    protected random(upper: number): number{
+        return Math.floor(Math.random() * upper+1); 
+    }
+
+    /**
+     * Gets particles in a given circle
+     * @param x Center of the circle x pos
+     * @param y Center of the circle y pos
+     * @param r radius
+     * @returns {Particle[]}
+     */
+    public getParticlesInRange(x: number, y: number, r: number): Particle[]{
+        return this.particles.filter((particle) => {
+            return Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y)) < r
+        })
+    }
+
+    /**
+     * Updates targets of data inside resize buffer to new location
+     * @param forceVectorPush 
+     * @returns 
+     */
+    protected retargetParticles(forceVectorPush: boolean = false){
+        if (this.frameData === []){
+            return
+        }
+
+        let valid_points: [number, number][] = [];
+        for (let y = 0; y < this.frameData.length; y++) {
+            for (let x = 0; x < this.frameData[0].length; x++) {
+                if (this.frameData[y][x] == 0) {
+                    valid_points.push(this.convertCords(x, y, this.frameData[0].length, this.frameData.length));
+                }
+            }
+        }
+
+        for (let i = 0; i < this.particles.length; i++) {
+            //console.log(Math.ceil(((valid_points.length / this.particles.length) * i) - 1));
+            let selectedPixel = valid_points[Math.floor(((valid_points.length / this.particles.length) * i))];
+            this.particles[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
+            if(forceVectorPush){
+                this.particles[i].overrideForceVector(
+                    (selectedPixel[0]-this.particles[i].x)/30,
+                    (selectedPixel[1]-this.particles[i].y)/30
+                )
+            }
+        }
     }
 }
 

@@ -32,6 +32,8 @@ const useStyles = makeStyles({
     },
     listLink: {
         marginRight: "20px",
+        width: "initial",
+        display: "block",
         "&::after": {
             content: '""',
             marginTop: "-5px",
@@ -58,7 +60,12 @@ export default ({currentPage} : NavigationProps) => {
             <List className={classes.list}>
                 {navigationLinks.map((navLink, i) => {
                     return (
-                    <ListItem className={classes.listLink} key={`${i}`}>
+                    <ListItem 
+                        className={classes.listLink} 
+                        disableGutters={true}
+                        selected={currentPage === navLink.path}
+                        key={`${i}`}
+                    >
                         <Link className={classes.link} to={navLink.path}>
                             <ListItemText>{navLink.name}</ListItemText>
                         </Link>

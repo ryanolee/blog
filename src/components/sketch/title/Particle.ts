@@ -1,5 +1,6 @@
-import p5Types from "p5";
 import config from "./config"
+import * as PIXI from "pixi.js"
+import randomcolor from 'randomcolor' 
 
 class Particle {
     /**
@@ -38,6 +39,11 @@ class Particle {
     public speed: number;
 
     /**
+     * Shape to keep track of / render against
+     */
+    public graphic: PIXI.Graphics;
+
+    /**
      * 
      * @param {number} x Initial X pos
      * @param y Initial Y pos
@@ -51,6 +57,19 @@ class Particle {
         this.yv = yv
         this.tx = x
         this.ty = y
+        this.setupShape()
+    }
+
+    setupShape(){
+        let line  = new PIXI.Graphics();
+        let color = randomcolor({luminosity: 'light'}).replace("#", '')
+        //console.log(color)
+        line.beginFill(parseInt(`0x${color}`));
+        //line.lineStyle(1);
+        line.drawCircle(0, 0, config.particle_size);
+        line.endFill();
+
+        this.graphic = line
     }
 
     /**
@@ -61,8 +80,28 @@ class Particle {
         this.y += this.yv
     }
 
-    draw(p5: p5Types) {
-        p5.line(this.x, this.y, this.x + this.xv, this.y + this.yv)
+    /**
+     * Update graphic state to trigger redraw
+     */
+    draw() {
+        this.graphic.x = this.x
+        this.graphic.y = this.y
+        //this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
+    }
+
+    /**
+     * Yields graphic to use in rendering
+     * @returns {PIXI.Graphics} graphic
+     */
+    getGraphic(): PIXI.Graphics{
+        return this.graphic
+    }
+
+    /**
+     * Cleans up particle
+     */
+     destroy(){
+        return this.graphic.destroy(true)
     }
 
     /**
@@ -71,26 +110,26 @@ class Particle {
      * @param width Width of canvas
      * @param height Height of canvas
      */
-    aimTowards(p5: p5Types, width: number, height: number) {
+    aimTowards(width: number, height: number) {
         // Y component wall bounce
-        if (p5.abs(this.x - this.tx) > 3) {
+        if (Math.abs(this.x - this.tx) > 3) {
             if (this.tx > this.x) {
-                this.xv += config.particle_speed * p5.abs(this.tx - this.x);
+                this.xv += config.particle_speed * Math.abs(this.tx - this.x);
             }
             else {
-                this.xv -= config.particle_speed * p5.abs(this.tx - this.x);
+                this.xv -= config.particle_speed * Math.abs(this.tx - this.x);
             }
         }
 
         // X component wall bounce
         if (this.x > width || this.x < 0) {
-            if (p5.abs(this.xv * config.dampening_factor) < 1) {
-                this.xv = (p5.abs(this.xv) / this.xv) * -1;
+            if (Math.abs(this.xv * config.dampening_factor) < 1) {
+                this.xv = (Math.abs(this.xv) / this.xv) * -1;
             }
             else {
                 this.xv *= -config.dampening_factor;
             }
-            if (p5.abs(this.x - width) > p5.abs(this.x)) {
+            if (Math.abs(this.x - width) > Math.abs(this.x)) {
                 this.x = config.edge_padding
             }
             else {
@@ -99,24 +138,24 @@ class Particle {
         }
 
         // Y component (move towards target)
-        if (p5.abs(this.y - this.ty) > 3) {
+        if (Math.abs(this.y - this.ty) > 3) {
             if (this.ty > this.y) {
-                this.yv += config.particle_speed * p5.abs(this.ty - this.y);
+                this.yv += config.particle_speed * Math.abs(this.ty - this.y);
             }
             else {
-                this.yv -= (config.particle_speed * p5.abs(this.ty - this.y));
+                this.yv -= (config.particle_speed * Math.abs(this.ty - this.y));
             }
         }
 
         // Y component (Wall bounce)
         if (this.y > height || this.y < 0) {
-            if (p5.abs(this.yv * config.dampening_factor) < 1) {
-                this.yv = (p5.abs(this.yv) / this.yv) * -1;
+            if (Math.abs(this.yv * config.dampening_factor) < 1) {
+                this.yv = (Math.abs(this.yv) / this.yv) * -1;
             }
             else {
                 this.yv *= -config.dampening_factor;
             }
-            if (p5.abs(this.y - height) > p5.abs(this.y)) {
+            if (Math.abs(this.y - height) > Math.abs(this.y)) {
                 this.y = config.edge_padding
             }
             else {
@@ -125,13 +164,13 @@ class Particle {
         }
 
         // Apply dampening so we can get to a target
-        let dx = p5.abs(this.x - this.tx)
-        let dy = p5.abs(this.y - this.ty)
+        let dx = Math.abs(this.x - this.tx)
+        let dy = Math.abs(this.y - this.ty)
 
 
         if (dx < 50 || dy < 50) {
-            this.yv = p5.min(this.yv * config.force_correction_to_target, 20)
-            this.xv = p5.min(this.xv * config.force_correction_to_target, 20)
+            this.yv = Math.min(this.yv * config.force_correction_to_target, 20)
+            this.xv = Math.min(this.xv * config.force_correction_to_target, 20)
         }
     }
 

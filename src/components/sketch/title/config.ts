@@ -7,11 +7,11 @@ export default {
     /**
      * Particle count to render
      */
-    max_particles: 5000,
+    max_particles: 10000,
     /**
      * Size the particles render at
      */
-    particle_size: 5,
+    particle_size: 1,
     /**
      * Maximum speed any particle should move at
      */
