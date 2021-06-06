@@ -1,5 +1,6 @@
 import Particle from './Particle'
 import md5 from "md5"
+import arrayShuffle from 'array-shuffle'
 import * as PIXI from "pixi.js"
 
 
@@ -30,6 +31,11 @@ class ParticleHandler {
     protected frameData:  [number, number][]
 
     /**
+     * Stores the path to the currently selected image as a sting
+     */
+    protected selectedImage: string
+
+    /**
      * @param p5 P5 canvas reference
      * @param width Width of canvas to handle
      * @param height Height of canvas to handle
@@ -40,6 +46,7 @@ class ParticleHandler {
         this.height = height
         this.tick = 0
         this.frameData = []
+        this.selectedImage = ""
     }
 
     /**
@@ -89,6 +96,7 @@ class ParticleHandler {
      */
     loadTargetImage(imagePath: string, forceVectorPush: boolean = false) {
         // load image in the background
+        this.selectedImage = imagePath
         let tempImage = new Image()
         tempImage.src = imagePath
 
@@ -133,6 +141,9 @@ class ParticleHandler {
             // Store frame data for future reference
             this.frameData = data
 
+            // Shuffle particles to make transitions ... cooler :D
+            this.particles = arrayShuffle(this.particles)
+
             // Retarget particles to newly stored frame buffer
             this.retargetParticles(forceVectorPush)
         }
@@ -168,6 +179,20 @@ class ParticleHandler {
     }
 
     /**
+     * Gets the width of the area bounded by the particle handler
+     */
+    public getWidth(): number{
+        return this.width
+    }
+
+    /**
+     * Gets the height of the area bounded by the particle handler
+     */
+     public getHeight(): number{
+        return this.height
+    }
+
+    /**
      * Generates a random number between 0 and upper
      * @param upper 
      * @returns The random number
@@ -187,6 +212,10 @@ class ParticleHandler {
         return this.particles.filter((particle) => {
             return Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y)) < r
         })
+    }
+
+    public getCurrentlySelectedImage():string {
+        return this.selectedImage
     }
 
     /**
@@ -213,7 +242,7 @@ class ParticleHandler {
             let selectedPixel = valid_points[Math.floor(((valid_points.length / this.particles.length) * i))];
             this.particles[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
             if(forceVectorPush){
-                this.particles[i].overrideForceVector(
+                this.particles[i].overrideForce(
                     (selectedPixel[0]-this.particles[i].x)/30,
                     (selectedPixel[1]-this.particles[i].y)/30
                 )

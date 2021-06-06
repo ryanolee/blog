@@ -81,6 +81,16 @@ class Particle {
     }
 
     /**
+     * Applies a set force vector to the particle
+     * @param xv 
+     * @param yv 
+     */
+    applyForce(xv, yv){
+        this.xv += xv 
+        this.yv += yv
+    }
+
+    /**
      * Update graphic state to trigger redraw
      */
     draw() {
@@ -187,7 +197,7 @@ class Particle {
      * @param x  Target x position
      * @param y  Target y position
      */
-    overrideForceVector(x: number, y: number) {
+    overrideForce(x: number, y: number) {
         this.xv = x
         this.yv = y
     }
