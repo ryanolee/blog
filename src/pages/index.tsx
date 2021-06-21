@@ -1,7 +1,7 @@
 import * as React from "react"
 import { graphql } from "gatsby"
+import Seo from "../components/Seo"
 import Navigation from "../components/Navigation"
-import Seo from "../components/seo"
 import Header from "../components/Header/Header"
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 
