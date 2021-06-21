@@ -60,7 +60,7 @@ const useStyles = makeStyles({
     }
 })
 
-const Navigation = ({currentPage, variant = 'default'} : NavigationProps) => {
+const Nav = ({currentPage, variant = 'default'} : NavigationProps) => {
     let classes = useStyles()
     return (
         <nav className={variant === 'default' ? classes.root : classes.rootSpaceless}>
@@ -84,4 +84,4 @@ const Navigation = ({currentPage, variant = 'default'} : NavigationProps) => {
     )
 }
 
-export default Navigation
+export default Nav

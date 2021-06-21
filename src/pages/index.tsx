@@ -2,7 +2,7 @@ import * as React from "react"
 import { graphql } from "gatsby"
 import Seo from "../components/Seo"
 import Header from "../components/Header/Header"
-import Navigation from "../components/Navigation"
+import Nav from "../components/Nav"
 
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 
@@ -28,7 +28,7 @@ const SiteIndex = ({ data, location }) => {
   return (
     <>
       <Seo title={siteTitle}/>
-      <Navigation currentPage={location} variant={'spaceless'}/>
+      <Nav currentPage={location} variant={'spaceless'}/>
       <Header/>
     </>
   )
