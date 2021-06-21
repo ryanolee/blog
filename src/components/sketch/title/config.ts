@@ -7,7 +7,13 @@ export default {
     /**
      * Particle count to render
      */
-    max_particles: 5000,
+    max_particles: 10000,
+
+    /**
+     * Absolute minimum number of particles that can be handled by browser
+     */
+    min_particles: 1000,
+    
     /**
      * Size the particles render at
      */
@@ -37,5 +43,13 @@ export default {
     /**
      * Target frame rate
      */
-    frame_rate: 60
+    frame_rate: 60,
+    /**
+     * The number of steps to render before computing if we need to drop the particle count
+     */
+    performance_sample: 10,
+    /**
+     * The proportion of the particles that should be taken away based on the preformance of the page
+     */
+    performance_step: 500
 }

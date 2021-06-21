@@ -1,12 +1,12 @@
 import * as React from "react"
-//import { Link, graphql } from "gatsby"
-//
-//import Bio from "../components/bio"
-//import Layout from "../components/layout"
-//import Seo from "../components/seo"
+import { graphql } from "gatsby"
+import Navigation from "./../components/Navigation"
+import Seo from "../components/seo"
 import Header from "../components/Header/Header"
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 
-const BlogIndex = ({ data, location }) => {
+const SiteIndex = ({ data, location }) => {
+  const siteTitle = data.site.siteMetadata?.title 
   /*const siteTitle = data.site.siteMetadata?.title || `Title`
   const posts = data.allMarkdownRemark.nodes */
 
@@ -26,21 +26,24 @@ const BlogIndex = ({ data, location }) => {
 
   return (
     <>
+      <Seo title={siteTitle}/>
+      <Navigation currentPage={location} variant={'spaceless'}/>
       <Header/>
     </>
   )
 }
 
-export default BlogIndex
+export default SiteIndex
 
-/*export const pageQuery = graphql`
-  query {
-    site {
-      siteMetadata {
-        title
-      }
+export const pageQuery = graphql`
+query {
+  site {
+    siteMetadata {
+      title
     }
-    allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
+  }
+}`
+/*    allMarkdownRemark(sort: { fields: [frontmatter___date], order: DESC }) {
       nodes {
         excerpt
         fields {

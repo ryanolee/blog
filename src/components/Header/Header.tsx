@@ -2,19 +2,30 @@ import React, { useEffect, useRef, useState } from "react"
 import debounce from "debounce"
 import * as PIXI from "pixi.js"
 import ParticleHandler from "../sketch/title/ParticleHandler"
-import config from "../sketch/title/config"
 import { Box } from "@material-ui/core"
 import HeaderControl from "./HeaderControl"
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles'
+
+interface HeaderProps {}
 
 const slides = [
-
+	{
+		"path": '/sketches/title/hi.bmp',
+		"breakpoints": {
+			"600": "s",
+			"1000": "m",
+			"1280": "l"
+		}
+	},
+	{
+		"path": '/sketches/title/dev.bmp',
+		"breakpoints": {
+			"600": "s",
+			"1000": "m",
+			"1280": "l"
+		}
+	}
 ]
-
-interface HeaderProps {
-	
-};
-
 
 const useStyles = makeStyles({
     container: {
@@ -39,7 +50,6 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 	//Cleanup on unmount
 	useEffect(() => {
 		return () => {
-			console.log('destroy')
 			// Remove app view
 			if(ph.current !== null){
 				ph.current.destroy()
@@ -58,24 +68,26 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 			return
 		}
 
-		// Force 16:9 aspect ratio
 		let w = Math.round(container.current.clientWidth)
 		let h = Math.round(container.current.clientHeight)
 
 		app.current = new PIXI.Application({
 			backgroundColor: 0xffffff,
+			antialias: true,
+			autoDensity: true,
 			width: w,
-			height: h
+			height: h,
+			resizeTo: container.current
 		});
 
 		container.current.appendChild(app.current.view)
 
 		ph.current = new ParticleHandler(w, h)
-		ph.current.generateRandomParticles(config.max_particles)
+		ph.current.generateRandomParticles()
 		ph.current.registerParticles(app.current)
-		ph.current.loadTargetImage('./sketches/title/header1.bmp', true)
+		ph.current.setSlide(slides[0])
 
-
+		//Desktop binding
 		app.current.view.addEventListener("mousemove", (evt) => {
 			// Push
 			ph.current.getParticlesInRange(evt.offsetX, evt.offsetY, 50).forEach((particle) => {
@@ -95,26 +107,37 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 			})
 		})
 
+		// Mobile bindings
+		app.current.view.addEventListener("touchmove", (evt) => {
+			let touch = evt?.targetTouches[0]
+			if(touch === null){
+				return
+			}
+
+			ph.current.getParticlesInRange(touch.clientX, touch.clientY, 50).forEach((particle) => {
+				particle.applyForce(
+					-(touch.clientX - particle.x) * 0.01,
+					-(touch.clientY - particle.y) * 0.01
+				)
+			})
+		})
+
 		app.current.ticker.add(() => {
 			ph.current.update()
 			ph.current.draw()
 		})
 
 		handleResize = debounce(() => {
+			console.log("Resize")
 			// Force 16:9 aspect ratio
 			let w = Math.round(container.current.clientWidth)
 			let h = Math.round(container.current.clientHeight)
 
-			if (w === app.current.view.width) {
-				return
-			}
-
-			console.log([w, h])
 			app.current.view.width = w
 			app.current.view.height = h
 
 			ph.current.resize(w, h)
-		}, 20, false)
+		}, 200, false)
 
 		window.addEventListener('resize', handleResize)
 	});
@@ -124,10 +147,7 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 	return (
 		<Box className={styles.container}>
 			<div ref={container} style={{ width: "100vw", height: "calc(100vh - 20px)", overflow: "hidden" }} />
-			<HeaderControl ph={ph} slides={[
-				'./sketches/title/header1.bmp',
-				'./sketches/title/header.bmp'
-			]} />
+			<HeaderControl ph={ph} slides={slides} />
 		</Box>
 	)
 }

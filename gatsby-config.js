@@ -6,9 +6,10 @@ module.exports = {
       summary: `A dev in the westmidlands with an interest in anything tech`,
     },
     description: `A blog detailing the inner ramblings of a guy who loves tech stuff 👨‍💻`,
-    siteUrl: `https://rizza.net`,
+    siteUrl: `https://ryan.gd`,
     social: {
       linkedin: `https://www.linkedin.com/in/ryan-lee-19884b148/`,
+      github: `https://github.com/ryanolee`
     },
   },
   plugins: [
@@ -51,12 +52,12 @@ module.exports = {
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        trackingId: `UA-73608207-1`,
-      },
-    },
+//    {
+//      resolve: `gatsby-plugin-google-analytics`,
+//      options: {
+//        trackingId: `UA-73608207-1`,
+//      },
+//    },
     {
       resolve: `gatsby-plugin-feed`,
       options: {

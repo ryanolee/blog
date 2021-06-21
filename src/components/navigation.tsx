@@ -1,6 +1,7 @@
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import { Link } from 'gatsby';
 import * as React from "react";
+import Social from './Social'
 import { makeStyles } from '@material-ui/core/styles';
 
 interface NavLink {
@@ -10,6 +11,7 @@ interface NavLink {
 
 interface NavigationProps {
     currentPage: string
+    variant: 'spaceless' | 'default'
 }
 
 const navigationLinks : NavLink[] = [
@@ -24,6 +26,11 @@ const navigationLinks : NavLink[] = [
 ]
 
 const useStyles = makeStyles({
+    root: {},
+    rootSpaceless: {
+        width: "100%",
+        position: 'absolute',
+    },
     list: {
         listStyle: "none",
         display: "flex",
@@ -53,11 +60,11 @@ const useStyles = makeStyles({
     }
 })
 
-export default ({currentPage} : NavigationProps) => {
+export default ({currentPage, variant = 'default'} : NavigationProps) => {
     let classes = useStyles()
     return (
-        <nav>
-            <List className={classes.list}>
+        <nav className={variant === 'default' ? classes.root : classes.rootSpaceless}>
+            {/*<List className={classes.list}>
                 {navigationLinks.map((navLink, i) => {
                     return (
                     <ListItem 
@@ -71,7 +78,8 @@ export default ({currentPage} : NavigationProps) => {
                         </Link>
                     </ListItem>)
                 })}
-            </List>
+            </List>*/}
+            <Social/>
         </nav>
     )
 }

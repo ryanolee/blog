@@ -1,4 +1,6 @@
-import ParticleHandler from "./ParticleHandler";
+import ParticleHandler from "./ParticleHandler"
+import md5 from "md5"
+import { IGLUniformData } from "@pixi/core"
 
 class ParticleImage {
     protected ph: ParticleHandler
@@ -15,7 +17,7 @@ class ParticleImage {
     /**
      * Stores the path to the currently selected image as a sting
      */
-     protected selectedImage: ParticleImage
+    protected selectedImage: string
 
     constructor(ph: ParticleHandler){
         this.ph = ph
@@ -23,6 +25,8 @@ class ParticleImage {
         this.height = 1
         this.imageWidth = 1
         this.imageHeight = 1
+        this.frameData = []
+        this.selectedImage = ""
     }
 
      /**
@@ -31,6 +35,8 @@ class ParticleImage {
      * @param forceVectorPush Shoots particles towards target with sudden push
      */
     loadTargetImage(imagePath: string, forceVectorPush: boolean = false) {
+        if(this.selectedImage === imagePath) return
+
         // load image in the background
         this.selectedImage = imagePath
         let tempImage = new Image()
@@ -53,6 +59,11 @@ class ParticleImage {
             let context = targetCanvas.getContext('2d');
             context.drawImage(tempImage, 0, 0);
             let dataOrig = context.getImageData(0, 0, tempImage.width, tempImage.height).data;
+            
+            //Take copies of the new image data values
+            this.imageWidth = tempImage.width
+            this.imageHeight = tempImage.height
+
             targetCanvas.remove()
 
             let fourths = [];
@@ -77,39 +88,102 @@ class ParticleImage {
             // Store frame data for future reference
             this.frameData = data
 
-            // Shuffle particles to make transitions ... cooler :D
-            this.particles = arrayShuffle(this.particles)
+            // Shuffle particle positions
+            this.ph.shuffleParticlePoses()
 
-            // Retarget particles to newly stored frame buffer
+            // Rescale and retarget particles to newly stored frame buffer
+            this.rescale()
             this.retargetParticles(forceVectorPush)
         }
     }
 
-    convertCoords(x, y) {
+    /**
+     * Updates targets of data inside resize buffer to new location
+     * @param forceVectorPush 
+     * @returns 
+     */
+    retargetParticles(forceVectorPush: boolean = false){
+        if (this.frameData === []){
+            return
+        }
+
+        let valid_points: [number, number][] = [];
+        for (let y = 0; y < this.frameData.length; y++) {
+            for (let x = 0; x < this.frameData[0].length; x++) {
+                if (this.frameData[y][x] == 0) {
+                    valid_points.push(this.convertCoords(x, y));
+                }
+            }
+        }
+
+        // Fall out if no valid points are given
+        if(valid_points.length < 2){
+            return
+        }
+
+        // @todo refactor this to not directly mutate the PH particles
+        for (let i = 0; i < this.ph.particles.length; i++) {
+            //console.log(Math.ceil(((valid_points.length / this.particles.length) * i) - 1));
+            let selectedPixel = valid_points[Math.floor(((valid_points.length / this.ph.particles.length) * i))];
+            this.ph.particles[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
+            if(forceVectorPush){
+                this.ph.particles[i].overrideForce(
+                    (selectedPixel[0]-this.ph.particles[i].x)/30,
+                    (selectedPixel[1]-this.ph.particles[i].y)/30
+                )
+            }
+        }
+    }
+
+    convertCoords(x: number, y:number): [number, number] {
         // Calculate bounds for top corner
         let leftBound = (this.ph.getWidth()/2) - (this.width/2)
         let topBound = (this.ph.getHeight()/2) - (this.height/2)
 
         // Rescale image against measurement (offset by edge bound)
-        return  [leftBound + Math.round((x / this.imageWidth) * this.width), topBound + Math.round((y / this.imageHeight) * this.height)]
+        return  [
+            leftBound + Math.round((x / this.imageWidth) * this.width),
+            topBound + Math.round((y / this.imageHeight) * this.height)
+        ]
     }
 
     rescale(){
-
         // Normalize scale units
-        let widthScaleUnit = this.ph.getWidth() / this.imageWidth
-        let HeightScaleUnit = this.ph.getHeight() / this.imageHeight
+        let relativeWidth = this.getScaledWidth(this.ph.getHeight()) 
+        let relativeHeight = this.getScaledHeight(this.ph.getWidth())
         
-        // Handle width
-        let isWidthRelativelyLarger = widthScaleUnit > HeightScaleUnit
+        this.width = relativeWidth > this.ph.getWidth() ?  
+            this.ph.getWidth() :
+            relativeWidth
         
-        this.width = isWidthRelativelyLarger ? 
-            HeightScaleUnit *  this.ph.getHeight() :
-            this.ph.getWidth()
-        
-        this.height = isWidthRelativelyLarger ? 
+        this.height = relativeHeight > this.ph.getHeight() ? 
             this.ph.getHeight() : 
-            widthScaleUnit *  this.ph.getWidth()
-        
+            relativeHeight
+    }
+
+    /**
+     * Handles the currently selected image
+     * @returns The currently selected image
+     */
+    public getCurrentlySelectedImage(): string {
+        return this.selectedImage
+    }
+
+    /**
+     * Scales relative width based on a given height (computed from original image aspect ratio)
+     * @param height 
+     */
+    protected getScaledWidth(height: number) : number{
+        return height * (this.imageWidth / this.imageHeight)
+    }
+
+    /**
+     * Scales relative width based on a given height (computed from original image aspect ratio)
+     * @param height 
+     */
+     protected getScaledHeight(width: number) : number{
+        return width * (this.imageHeight / this.imageWidth)
     }
 }
+
+export default ParticleImage;

@@ -1,4 +1,4 @@
-import * as React from "react"
+/*import * as React from "react"
 import { Link, graphql } from "gatsby"
 
 import Bio from "../components/bio"
@@ -104,4 +104,4 @@ export const pageQuery = graphql`
       }
     }
   }
-`
+`*/
