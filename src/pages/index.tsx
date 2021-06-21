@@ -1,8 +1,9 @@
 import * as React from "react"
 import { graphql } from "gatsby"
 import Seo from "../components/Seo"
-import Navigation from "../components/Navigation.tsx"
 import Header from "../components/Header/Header"
+import Navigation from "../components/Navigation"
+
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 
 const SiteIndex = ({ data, location }) => {
