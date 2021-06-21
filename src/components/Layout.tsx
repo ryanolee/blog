@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link } from "gatsby"
-import Navigation from "./Navigation"
+import Nav from "./Nav"
 
 
 const Layout = ({ location, title, children }) => {
@@ -24,7 +24,7 @@ const Layout = ({ location, title, children }) => {
 
   return (
     <div className="global-wrapper" data-is-root-path={isRootPath}>
-      <Navigation/>
+      <Nav/>
       <main>{children}</main>
       <footer>
         © {new Date().getFullYear()}, Built with
