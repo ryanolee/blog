@@ -6,7 +6,7 @@ import * as React from "react";
 import { makeStyles } from '@material-ui/core/styles';
 
 interface SocialProps {
-    className: string
+    className?: string
 }
 
 const useStyles = makeStyles({
