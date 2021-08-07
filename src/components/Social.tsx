@@ -13,7 +13,7 @@ const useStyles = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'row-reverse',
-        alignSelf: 'flex-end'
+        marginLeft: "auto"
     },
     link: {
         marginLeft: 10,

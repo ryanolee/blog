@@ -35,7 +35,8 @@ const useStyles = makeStyles({
         listStyle: "none",
         display: "flex",
         flexDirection: "row",
-        justifyContent: "flex-start"
+        justifyContent: "flex-start",
+        margin: "0 20px"
     },
     listLink: {
         marginRight: "20px",
@@ -64,7 +65,7 @@ const Nav = ({currentPage, variant = 'default'} : NavigationProps) => {
     let classes = useStyles()
     return (
         <nav className={variant === 'default' ? classes.root : classes.rootSpaceless}>
-            {/*<List className={classes.list}>
+            <List className={classes.list}>
                 {navigationLinks.map((navLink, i) => {
                     return (
                     <ListItem 
@@ -78,8 +79,8 @@ const Nav = ({currentPage, variant = 'default'} : NavigationProps) => {
                         </Link>
                     </ListItem>)
                 })}
-            </List>*/}
-            <Social/>
+                <Social/>
+            </List>
         </nav>
     )
 }
