@@ -3,6 +3,7 @@ import { Slide } from './../../interfaces/Header'
 import ParticleHandler from "../sketch/title/ParticleHandler"
 import { Box  } from "@material-ui/core"
 import HeaderControlButton from "./HeaderControlButton"
+import HeaderSideButton from "./HeaderSideButton"
 
 
 
@@ -16,14 +17,19 @@ export default ({ph, slides, selectedSlide = 0}: HeaderControlProps) => {
     let [selected, setSelected] = useState<number>(selectedSlide)
 
     return (
-        <Box display="flex" justifyContent="center">
-            {slides.map((slide, index) => (<HeaderControlButton 
-                ph={ph} 
-                index={index}
-                setSelected={setSelected}
-                targetSlide={slide}
-                selected={slides[selected]?.path === slide?.path}
-            />))}
-        </Box >
+        <>
+            <HeaderSideButton ph={ph} slides={slides} slide={selected} setSlide={setSelected} variant='next'/>
+            <HeaderSideButton ph={ph} slides={slides} slide={selected} setSlide={setSelected} variant='last'/>
+            <Box display="flex" justifyContent="center">
+
+                {slides.map((slide, index) => (<HeaderControlButton 
+                    ph={ph} 
+                    index={index}
+                    setSelected={setSelected}
+                    targetSlide={slide}
+                    selected={slides[selected]?.path === slide?.path}
+                />))}
+            </Box >
+        </>
     )
 }

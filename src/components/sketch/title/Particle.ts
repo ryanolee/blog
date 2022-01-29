@@ -38,6 +38,8 @@ class Particle {
      */
     public speed: number;
 
+    public color: number;
+
     /**
      * Shape to keep track of / render against
      */
@@ -63,11 +65,14 @@ class Particle {
     setupShape(){
         let line  = new PIXI.Graphics();
         let color = randomcolor({luminosity: 'light'}).replace("#", '')
+        this.color = parseInt(`0x${color}`)
         //console.log(color)
-        line.beginFill(parseInt(`0x${color}`));
+        //line.beginFill(parseInt(`0x${color}`));
         //line.lineStyle(1);
-        line.drawCircle(0, 0, config.particle_size);
-        line.endFill();
+        //line.drawCircle(0, 0, config.particle_size);
+        //line.lineStyle(config.particle_size, parseInt(`0x${color}`))
+        //line.line
+        //line.endFill();
 
         this.graphic = line
     }
@@ -94,9 +99,18 @@ class Particle {
      * Update graphic state to trigger redraw
      */
     draw() {
-        this.graphic.x = this.x
-        this.graphic.y = this.y
+        //this.graphic.x = this.x
+        //this.graphic.y = this.y
         //this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
+        this.graphic.clear()
+        this.graphic.beginFill(this.color)
+        this.graphic.drawCircle(this.x, this.y, config.particle_size / 2)
+        this.graphic.lineStyle(config.particle_size, this.color)
+        this.graphic.moveTo(this.x, this.y)
+        this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
+        this.graphic.endFill()
+        
+        
     }
 
     /**

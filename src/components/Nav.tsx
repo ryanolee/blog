@@ -48,7 +48,7 @@ const useStyles = makeStyles({
             width: "0px",
             height: "2px",
             display: "block",
-            backgroundColor: "black",
+            backgroundColor: "white",
             margin: "auto",
             transition: "100ms"
         },
@@ -57,7 +57,8 @@ const useStyles = makeStyles({
         }
     },
     link: {
-        textDecoration: "none"
+        textDecoration: "none",
+        color: "white"
     }
 })
 

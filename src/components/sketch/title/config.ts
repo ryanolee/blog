@@ -17,7 +17,7 @@ export default {
     /**
      * Size the particles render at
      */
-    particle_size: 2,
+    particle_size: 5,
     /**
      * Maximum speed any particle should move at
      */

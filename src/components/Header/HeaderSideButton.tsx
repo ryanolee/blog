@@ -2,7 +2,7 @@ import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 
 import {Slide} from './../../interfaces/Header'
-import { MutableRefObject } from 'react'
+import React, { MutableRefObject } from 'react'
 import ParticleHandler from '../sketch/title/ParticleHandler'
 import { makeStyles } from '@material-ui/core/styles';
 import { IconButton } from '@material-ui/core';
@@ -33,8 +33,7 @@ const useStyles = makeStyles({
     },
 
     glassArrow: {
-        backgroundColor: "rgba(255, 255, 255, .15)",
-        backdropFilter: "blur(5px)"
+        color: "rgba(255, 255, 255, .65)"
     }
   });
 
@@ -49,12 +48,12 @@ export default ({ph, variant, slide, setSlide, slides} : HeaderSideButtonProps) 
 
     const onClick = () => {
         let nextIndex = slide + (variant === 'next' ? 1 : -1)
-        if(nextIndex > slides.length){
+        if(nextIndex >= slides.length){
             nextIndex = 0
         }
 
         if(nextIndex < 0){
-            nextIndex = slides.length
+            nextIndex = slides.length - 1
         }
 
         setSlide(nextIndex)
@@ -62,11 +61,16 @@ export default ({ph, variant, slide, setSlide, slides} : HeaderSideButtonProps) 
     }
 
     const targetIcon = variant === 'next' ? 
-        (<ArrowForwardIosIcon/>) :
-        (<ArrowBackIosIcon/>)
+        (<ArrowForwardIosIcon
+            className={`${glassArrow} `}
+        />) :
+        (<ArrowBackIosIcon
+            className={`${glassArrow}`}
+        />)
 
+    const alignmentClass = variant === 'next' ? centeredArrowRight : centeredArrowLeft
     return (
-        <IconButton onClick={onClick} =()>
+        <IconButton onClick={onClick} className={`${centeredArrow} ${alignmentClass}`}>
             {targetIcon}
         </IconButton>
     )
