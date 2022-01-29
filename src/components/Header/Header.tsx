@@ -72,7 +72,7 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 		let h = Math.round(container.current.clientHeight)
 
 		app.current = new PIXI.Application({
-			backgroundColor: 0xffffff,
+			backgroundColor: 0x000000,
 			antialias: true,
 			autoDensity: true,
 			width: w,

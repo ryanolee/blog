@@ -4,7 +4,7 @@ import ParticlePerformance from './ParticlePerformance'
 import config from "./config"
 import arrayShuffle from 'array-shuffle'
 import * as PIXI from "pixi.js"
-import { Slide } from '../../../Interfaces/Header'
+import { Slide } from '../../../interfaces/Header'
 
 
 class ParticleHandler {

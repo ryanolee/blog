@@ -1,5 +1,5 @@
 import React, {MutableRefObject, useEffect, useState} from "react"
-import {Slide} from './../../Interfaces/Header'
+import { Slide } from './../../interfaces/Header'
 import ParticleHandler from "../sketch/title/ParticleHandler"
 import { Box  } from "@material-ui/core"
 import HeaderControlButton from "./HeaderControlButton"
@@ -9,24 +9,20 @@ import HeaderControlButton from "./HeaderControlButton"
 interface HeaderControlProps{
     ph: MutableRefObject<ParticleHandler>,
     slides: Slide[],
-    selectedSlide: number
+    selectedSlide?: number
 }
 
 export default ({ph, slides, selectedSlide = 0}: HeaderControlProps) => {
-    let [selected, setSelected] = useState<Slide>()
-
-    // On initial mount select the first slide
-    useEffect(() => {
-        setSelected(slides[selectedSlide])
-    }, [])
+    let [selected, setSelected] = useState<number>(selectedSlide)
 
     return (
         <Box display="flex" justifyContent="center">
-            {slides.map(slide => (<HeaderControlButton 
+            {slides.map((slide, index) => (<HeaderControlButton 
                 ph={ph} 
+                index={index}
                 setSelected={setSelected}
                 targetSlide={slide}
-                selected={selected?.path === slide?.path}
+                selected={slides[selected]?.path === slide?.path}
             />))}
         </Box >
     )
