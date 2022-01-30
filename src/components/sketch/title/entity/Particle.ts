@@ -1,7 +1,7 @@
-import config from "./config"
+import config from "../config"
 import * as PIXI from "pixi.js"
 import randomcolor from 'randomcolor' 
-import ParticleHandler from "./ParticleHandler";
+import ParticleHandler from "./../handler/ParticleHandler";
 
 class Particle {
     /**

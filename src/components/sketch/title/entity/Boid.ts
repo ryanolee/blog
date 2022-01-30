@@ -1,6 +1,6 @@
-import config from "./config";
+import config from "../config";
 import Particle from "./Particle";
-import ParticleHandler from "./ParticleHandler";
+import ParticleHandler from "./../entity/ParticleHandler";
 
 /*
  * @name Interactivity 1
