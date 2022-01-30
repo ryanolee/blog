@@ -1,7 +1,7 @@
 import ParticleHandler from "./ParticleHandler";
 import config from "./config";
 
-const PERFORMANCE_CACHE_KEY = "ParticlePerf-v1"
+const PERFORMANCE_CACHE_KEY = "ParticlePerf-v2"
 
 /**
  * Handler to compute how many particles a given device can actually handle and scale back from the max until we have a known good amount
@@ -40,6 +40,7 @@ class ParticlePerformance {
 
                 this.ph.removeParticles(decrementAmount)
                 this.ph.refresh()
+                console.log(`Particle count reduced to: ${this.ph.getParticleCount()}`)
                 this.frameTimes = []
             } else {
                 console.log(`Scaled particle performance. System can handle ${this.ph.getParticleCount()} particles @ ${config.frame_rate} fps`)

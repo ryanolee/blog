@@ -1,6 +1,7 @@
 import config from "./config"
 import * as PIXI from "pixi.js"
 import randomcolor from 'randomcolor' 
+import ParticleHandler from "./ParticleHandler";
 
 class Particle {
     /**
@@ -80,7 +81,7 @@ class Particle {
     /**
      * Updates current position
      */
-    update() {
+    update(_ph: ParticleHandler) {
         this.x += this.xv
         this.y += this.yv
     }
@@ -104,7 +105,7 @@ class Particle {
         //this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
         this.graphic.clear()
         this.graphic.beginFill(this.color)
-        this.graphic.drawCircle(this.x, this.y, config.particle_size / 2)
+        this.graphic.drawCircle(this.x, this.y, config.particle_size)
         this.graphic.lineStyle(config.particle_size, this.color)
         this.graphic.moveTo(this.x, this.y)
         this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
@@ -130,7 +131,6 @@ class Particle {
 
     /**
      * Updates velocities towards data
-     * @param p5 The p5 instance
      * @param width Width of canvas
      * @param height Height of canvas
      */

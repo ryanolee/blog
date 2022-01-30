@@ -17,7 +17,7 @@ export default {
     /**
      * Size the particles render at
      */
-    particle_size: 5,
+    particle_size: 2,
     /**
      * Maximum speed any particle should move at
      */
@@ -43,7 +43,7 @@ export default {
     /**
      * Target frame rate
      */
-    frame_rate: 60,
+    frame_rate: 45,
     /**
      * The number of steps to render before computing if we need to drop the particle count
      */
@@ -51,5 +51,22 @@ export default {
     /**
      * The proportion of the particles that should be taken away based on the preformance of the page
      */
-    performance_step: 500
+    performance_step: 500,
+
+
+    // BOIDS
+    /**
+     * The speed boids move at
+     */
+    boid_speed: 4,
+
+    /**
+     * The rate at which boids turn at 
+     */
+    boid_turn_rate: 5,
+
+    /**
+     * Get range sight
+     */
+    boid_sight_range: 80
 }

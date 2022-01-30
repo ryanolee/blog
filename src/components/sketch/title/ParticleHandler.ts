@@ -5,6 +5,7 @@ import config from "./config"
 import arrayShuffle from 'array-shuffle'
 import * as PIXI from "pixi.js"
 import { Slide } from '../../../interfaces/Header'
+import Boid from './Boid'
 
 
 class ParticleHandler {
@@ -62,7 +63,7 @@ class ParticleHandler {
     public update(){
         this.tick++
         for(let particle of this.particles){
-            particle.update()
+            particle.update(this)
             particle.aimTowards(this.width, this.height)
         }
 
@@ -148,6 +149,15 @@ class ParticleHandler {
         let target = this.performance.has() ?  this.performance.load() : config.max_particles
         for (let i = 0; i < target; i++) {
             this.particles.push(new Particle(
+                this.random(this.width),
+                this.random(this.height)
+            ))
+        }
+    }
+
+    public generateRandomBoids() {
+        for (let i = 0; i < 200; i++) {
+            this.particles.push(new Boid(
                 this.random(this.width),
                 this.random(this.height)
             ))
@@ -245,6 +255,23 @@ class ParticleHandler {
         return this.particles.filter((particle) => {
             return Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y)) < r
         })
+    }
+
+    /**
+     * Gets the closest particle in a given radius
+     */
+    public getClosestParticleInRange(x: number, y: number, r: number): Particle|null{
+        let closest: Particle | null = null
+        let closestDistance = Infinity
+        for(let particle of this.particles){
+            const distance = Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y))
+            if(distance < r && distance < closestDistance && distance !== 0){
+                closestDistance = distance
+                closest = particle
+            }
+        }
+
+        return closest
     }
 
     /**

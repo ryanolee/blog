@@ -83,44 +83,44 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 		container.current.appendChild(app.current.view)
 
 		ph.current = new ParticleHandler(w, h)
-		ph.current.generateRandomParticles()
+		ph.current.generateRandomBoids()
 		ph.current.registerParticles(app.current)
 		ph.current.setSlide(slides[0])
 
 		//Desktop binding
-		app.current.view.addEventListener("mousemove", (evt) => {
-			// Push
-			ph.current.getParticlesInRange(evt.offsetX, evt.offsetY, 50).forEach((particle) => {
-				particle.applyForce(
-					-(evt.offsetX - particle.x) * 0.01,
-					-(evt.offsetY - particle.y) * 0.01
-				)
-			})
-		})
-
-		app.current.view.addEventListener("mousedown", (evt) => {
-			ph.current.getParticlesInRange(evt.offsetX, evt.offsetY, 100).forEach((particle) => {
-				particle.overrideForce(
-					(particle.x - evt.offsetX) * 0.1,
-					(particle.y - evt.offsetY) * 0.1
-				)
-			})
-		})
-
-		// Mobile bindings
-		app.current.view.addEventListener("touchmove", (evt) => {
-			let touch = evt?.targetTouches[0]
-			if(touch === null){
-				return
-			}
-
-			ph.current.getParticlesInRange(touch.clientX, touch.clientY, 50).forEach((particle) => {
-				particle.applyForce(
-					-(touch.clientX - particle.x) * 0.01,
-					-(touch.clientY - particle.y) * 0.01
-				)
-			})
-		})
+		//app.current.view.addEventListener("mousemove", (evt) => {
+		//	// Push
+		//	ph.current.getParticlesInRange(evt.offsetX, evt.offsetY, 50).forEach((particle) => {
+		//		particle.applyForce(
+		//			-(evt.offsetX - particle.x) * 0.01,
+		//			-(evt.offsetY - particle.y) * 0.01
+		//		)
+		//	})
+		//})
+//
+		//app.current.view.addEventListener("mousedown", (evt) => {
+		//	ph.current.getParticlesInRange(evt.offsetX, evt.offsetY, 100).forEach((particle) => {
+		//		particle.overrideForce(
+		//			(particle.x - evt.offsetX) * 0.1,
+		//			(particle.y - evt.offsetY) * 0.1
+		//		)
+		//	})
+		//})
+//
+		//// Mobile bindings
+		//app.current.view.addEventListener("touchmove", (evt) => {
+		//	let touch = evt?.targetTouches[0]
+		//	if(touch === null){
+		//		return
+		//	}
+//
+		//	ph.current.getParticlesInRange(touch.clientX, touch.clientY, 50).forEach((particle) => {
+		//		particle.applyForce(
+		//			-(touch.clientX - particle.x) * 0.01,
+		//			-(touch.clientY - particle.y) * 0.01
+		//		)
+		//	})
+		//})
 
 		app.current.ticker.add(() => {
 			ph.current.update()
