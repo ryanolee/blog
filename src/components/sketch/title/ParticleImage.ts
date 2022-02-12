@@ -1,4 +1,4 @@
-import ParticleHandler from "./ParticleHandler"
+import ParticleHandler from "./handler/ParticleHandler"
 import md5 from "md5"
 import { IGLUniformData } from "@pixi/core"
 
@@ -89,7 +89,7 @@ class ParticleImage {
             this.frameData = data
 
             // Shuffle particle positions
-            this.ph.shuffleParticlePoses()
+            this.ph.shuffleEntitiyPoses()
 
             // Rescale and retarget particles to newly stored frame buffer
             this.rescale()
@@ -122,14 +122,14 @@ class ParticleImage {
         }
 
         // @todo refactor this to not directly mutate the PH particles
-        for (let i = 0; i < this.ph.particles.length; i++) {
+        for (let i = 0; i < this.ph.entities.length; i++) {
             //console.log(Math.ceil(((valid_points.length / this.particles.length) * i) - 1));
-            let selectedPixel = valid_points[Math.floor(((valid_points.length / this.ph.particles.length) * i))];
-            this.ph.particles[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
+            let selectedPixel = valid_points[Math.floor(((valid_points.length / this.ph.entities.length) * i))];
+            this.ph.entities[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
             if(forceVectorPush){
-                this.ph.particles[i].overrideForce(
-                    (selectedPixel[0]-this.ph.particles[i].x)/30,
-                    (selectedPixel[1]-this.ph.particles[i].y)/30
+                this.ph.entities[i].overrideForce(
+                    (selectedPixel[0]-this.ph.entities[i].x)/30,
+                    (selectedPixel[1]-this.ph.entities[i].y)/30
                 )
             }
         }

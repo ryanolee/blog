@@ -1,59 +1,31 @@
-import Particle from './Particle'
-import ParticleImage from './ParticleImage'
-import ParticlePerformance from './ParticlePerformance'
-import config from "./config"
-import arrayShuffle from 'array-shuffle'
+import Particle from '../entity/Particle'
+import ParticleImage from '../ParticleImage'
+import config from "../config"
 import * as PIXI from "pixi.js"
-import { Slide } from '../../../interfaces/Header'
-import Boid from './Boid'
+import { Slide } from '../../../../interfaces/Header'
+import EntityHandler from './EntityHandler'
+import EntityPerformance from '../EntityPerformance'
 
+class ParticleHandler extends EntityHandler<Particle> {
+    public entities: Particle[]
 
-class ParticleHandler {
-    /**
-     * Particles managed by handler
-     */
-    public particles: Particle[]
-
-    /**
-     * Frames rendered since the website loaded
-     */
-    protected tick: number
-
-    /**
-     * Width of canvas
-     */
-    protected width: number
-
-    /**
-     * Height of canvas
-     */
-    protected height: number
-    
     /**
      * Particle image reference
      */
-    protected particleImage: ParticleImage
+     protected particleImage: ParticleImage
 
-    /**
-     * Current slide
-     */
-    protected slide: Slide|null
-
-    /**
-     * Performance handler
-     */
-    protected performance: ParticlePerformance
+     /**
+      * Current slide
+      */
+     protected slide: Slide|null
 
     /**
      * @param width Width of canvas to handle
      * @param height Height of canvas to handle
      */
     constructor(width: number, height: number) {
-        this.particles = []
-        this.width = width
-        this.height = height
+        super(width, height)
         this.particleImage = new ParticleImage(this)
-        this.performance = new ParticlePerformance(this)
         this.tick = 0
     }
 
@@ -62,33 +34,13 @@ class ParticleHandler {
      */
     public update(){
         this.tick++
-        for(let particle of this.particles){
+        for(let particle of this.entities){
             particle.update(this)
             particle.aimTowards(this.width, this.height)
         }
 
         // Tick the performance handle
         this.performance.tick()
-    }
-
-    /**
-     * Removes a given number of particles from the handler
-     * @param count 
-     */
-    public removeParticles(count: number){
-        // Tear out particles
-        this.particles.splice(0, count).forEach((particle) => {
-            particle.destroy()
-        })
-    }
-
-    /**
-     * Render line against config
-     */
-    public registerParticles(app: PIXI.Application){
-        this.particles
-            .map(particle => particle.getGraphic())
-            .forEach((particle) => {app.stage.addChild(particle)})
     }
 
     /**
@@ -128,48 +80,27 @@ class ParticleHandler {
      * Renders particles on frame
      */
     public draw(){
-        this.particles.forEach((particle) => {
+        this.entities.forEach((particle) => {
             particle.draw()
         })
-    }
-
-    /**
-     * The number of particles the manger is handling
-     * @returns The number of particles
-     */
-    public getParticleCount(): number {
-        return this.particles.length
     }
 
     /**
      * Pushes a given number of particles in random places on the canvas
      * @param target Number of particles to generate
      */
-    public generateRandomParticles() {
+    public generateRandom() {
+        if(this.performance === null){
+            this.performance = new EntityPerformance(this, config.particle_performace_cache_key, config.min_particles)
+        }
+
         let target = this.performance.has() ?  this.performance.load() : config.max_particles
         for (let i = 0; i < target; i++) {
-            this.particles.push(new Particle(
+            this.entities.push(new Particle(
                 this.random(this.width),
                 this.random(this.height)
             ))
         }
-    }
-
-    public generateRandomBoids() {
-        for (let i = 0; i < 200; i++) {
-            this.particles.push(new Boid(
-                this.random(this.width),
-                this.random(this.height)
-            ))
-        }
-    }
-
-    /**
-     * Shuffles particle positions to align randomly 
-     */
-    public shuffleParticlePoses(){
-        // Shuffle particles to make transitions ... cooler :D
-        this.particles = arrayShuffle(this.particles)
     }
 
     /**
@@ -182,22 +113,6 @@ class ParticleHandler {
      */
     public convertCords(x: number, y: number, xTotal: number, yTotal: number): [number, number] {
         return [Math.round((x / xTotal) * this.width), Math.round((y / yTotal) * this.height)];
-    }
-
-    /**
-     * Destroys all particles managed by handler
-     */
-    public destroy(){
-        this.particles.forEach(particle => {particle.destroy()})
-        this.particles = []
-    }
-
-    /**
-     * Runs a callback against each particle
-     * @param {function} fn The callback to run the function against
-     */
-    each(fn: (p:Particle) => void): void{
-        this.particles.forEach(fn)
     }
 
     /**
@@ -219,59 +134,6 @@ class ParticleHandler {
     public refresh(){
         this.particleImage.rescale()
         this.particleImage.retargetParticles()
-    }
-
-    /**
-     * Gets the width of the area bounded by the particle handler
-     */
-    public getWidth(): number{
-        return this.width
-    }
-
-    /**
-     * Gets the height of the area bounded by the particle handler
-     */
-     public getHeight(): number{
-        return this.height
-    }
-
-    /**
-     * Generates a random number between 0 and upper
-     * @param upper 
-     * @returns The random number
-     */
-    protected random(upper: number): number{
-        return Math.floor(Math.random() * upper+1); 
-    }
-
-    /**
-     * Gets particles in a given circle
-     * @param x Center of the circle x pos
-     * @param y Center of the circle y pos
-     * @param r radius
-     * @returns {Particle[]}
-     */
-    public getParticlesInRange(x: number, y: number, r: number): Particle[]{
-        return this.particles.filter((particle) => {
-            return Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y)) < r
-        })
-    }
-
-    /**
-     * Gets the closest particle in a given radius
-     */
-    public getClosestParticleInRange(x: number, y: number, r: number): Particle|null{
-        let closest: Particle | null = null
-        let closestDistance = Infinity
-        for(let particle of this.particles){
-            const distance = Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y))
-            if(distance < r && distance < closestDistance && distance !== 0){
-                closestDistance = distance
-                closest = particle
-            }
-        }
-
-        return closest
     }
 
     /**

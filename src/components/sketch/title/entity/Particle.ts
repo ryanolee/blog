@@ -2,28 +2,9 @@ import config from "../config"
 import * as PIXI from "pixi.js"
 import randomcolor from 'randomcolor' 
 import ParticleHandler from "./../handler/ParticleHandler";
+import Entity from "./Entity";
 
-class Particle {
-    /**
-     * X position of particle
-     */
-    public x: number;
-
-    /**
-     * Y position of particle
-     */
-    public y: number;
-
-    /**
-     * X position of particle
-     */
-    public xv: number;
-
-    /**
-     * Y position of particle
-     */
-    public yv: number;
-
+class Particle extends Entity{
     /**
      * Target X position of particle
      */
@@ -54,10 +35,7 @@ class Particle {
      * @param yv Initial Y velocity
      */
     constructor(x: number, y: number, xv: number = 0, yv: number = 0) {
-        this.x = x
-        this.y = y
-        this.xv = xv
-        this.yv = yv
+        super(x, y, xv, yv)
         this.tx = x
         this.ty = y
         this.setupShape()

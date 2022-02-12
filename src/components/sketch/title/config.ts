@@ -10,6 +10,11 @@ export default {
     max_particles: 10000,
 
     /**
+     * Cache key for particle performance
+     */
+    particle_performace_cache_key: "ParticleCacheKey-v2",
+
+    /**
      * Absolute minimum number of particles that can be handled by browser
      */
     min_particles: 1000,
@@ -58,15 +63,22 @@ export default {
     /**
      * The speed boids move at
      */
-    boid_speed: 4,
+    boid_speed: 3,
+
+    boid_avoid_range: 80,
 
     /**
      * The rate at which boids turn at 
      */
-    boid_turn_rate: 5,
+    boid_cohesion_force: 1.5,
+
+    /**
+     * The rate at which boids turn at 
+     */
+    boid_avoid_force: 0.01,
 
     /**
      * Get range sight
      */
-    boid_sight_range: 80
+    boid_sight_range: 200
 }

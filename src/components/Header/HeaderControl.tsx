@@ -1,6 +1,6 @@
 import React, {MutableRefObject, useEffect, useState} from "react"
 import { Slide } from './../../interfaces/Header'
-import ParticleHandler from "../sketch/title/ParticleHandler"
+import ParticleHandler from "../sketch/title/handler/ParticleHandler"
 import { Box  } from "@material-ui/core"
 import HeaderControlButton from "./HeaderControlButton"
 import HeaderSideButton from "./HeaderSideButton"

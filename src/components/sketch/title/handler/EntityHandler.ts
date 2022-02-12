@@ -1,18 +1,16 @@
-import Particle from './Particle'
-import ParticleImage from './ParticleImage'
-import ParticlePerformance from './ParticlePerformance'
-import config from "./config"
+//import Particle from './Particle'
+import EntityPerformance from '../EntityPerformance'
 import arrayShuffle from 'array-shuffle'
 import * as PIXI from "pixi.js"
-import { Slide } from '../../../interfaces/Header'
+import Entity from '../entity/Entity'
 
 
 
-class EntityHandler<T> {
+abstract class EntityHandler<T> {
     /**
      * Entities managed by handler
      */
-    public particles: Particle[]
+    public entities: (T&Entity)[]
 
     /**
      * Frames rendered since the website loaded
@@ -28,43 +26,30 @@ class EntityHandler<T> {
      * Height of canvas
      */
     protected height: number
-    
-    /**
-     * Particle image reference
-     */
-    protected particleImage: ParticleImage
-
-    /**
-     * Current slide
-     */
-    protected slide: Slide|null
 
     /**
      * Performance handler
      */
-    protected performance: ParticlePerformance
+    protected performance: EntityPerformance | null = null;
 
     /**
      * @param width Width of canvas to handle
      * @param height Height of canvas to handle
      */
     constructor(width: number, height: number) {
-        this.particles = []
+        this.entities = []
         this.width = width
         this.height = height
-        this.particleImage = new ParticleImage(this)
-        this.performance = new ParticlePerformance(this)
         this.tick = 0
     }
 
     /**
-     * Updates motion of particles 
+     * Updates motion of entity 
      */
     public update(){
         this.tick++
-        for(let particle of this.particles){
-            particle.update(this)
-            particle.aimTowards(this.width, this.height)
+        for(let entity of this.entities){
+            entity.update(this)
         }
 
         // Tick the performance handle
@@ -72,132 +57,70 @@ class EntityHandler<T> {
     }
 
     /**
-     * Removes a given number of particles from the handler
+     * Removes a given number of entities from the handler
      * @param count 
      */
-    public removeParticles(count: number){
-        // Tear out particles
-        this.particles.splice(0, count).forEach((particle) => {
-            particle.destroy()
+    public removeEntities(count: number){
+        // Tear out entities
+        this.entities.splice(0, count).forEach((entity) => {
+            entity.destroy()
         })
     }
 
     /**
      * Render line against config
      */
-    public registerParticles(app: PIXI.Application){
-        this.particles
-            .map(particle => particle.getGraphic())
-            .forEach((particle) => {app.stage.addChild(particle)})
+    public registerEntities(app: PIXI.Application){
+        this.entities
+            .map(entity => entity.getGraphic())
+            .forEach((entity) => {app.stage.addChild(entity)})
     }
 
     /**
-     * @param slide 
-     */
-    public setSlide(slide: Slide){
-        this.slide = slide
-        this.handleSlideBreakpoint()
-        //this.refresh()
-    }
-
-    /**
-     * Attempts to load image based on closest breakpoint to image
-     * @param params 
-     */
-    public handleSlideBreakpoint() {
-        let targetBreakpoints = Object.keys(this.slide.breakpoints)
-            .map(i => parseInt(i))
-            .sort((a, b) => {return a - b})
-            
-        let targetBreakpoint = targetBreakpoints[0]
-        
-        for(let bp of targetBreakpoints){
-            if(this.width > bp){
-                
-                targetBreakpoint = bp
-            }
-        }
-        
-        let toLoad = this.slide.breakpoints[targetBreakpoint]
-        let path = this.slide.path.split(".")
-        let loadPath = `${path[0]}-${toLoad}.${path[1]}`
-        this.particleImage.loadTargetImage(loadPath)
-    }
-
-    /**
-     * Renders particles on frame
+     * Renders entities on frame canvas
      */
     public draw(){
-        this.particles.forEach((particle) => {
-            particle.draw()
+        this.entities.forEach((entity) => {
+            entity.draw()
         })
     }
 
     /**
-     * The number of particles the manger is handling
-     * @returns The number of particles
+     * The number of entities the manger is handling
+     * @returns The number of entities
      */
-    public getParticleCount(): number {
-        return this.particles.length
+    public getEntityCount(): number {
+        return this.entities.length
     }
 
     /**
-     * Pushes a given number of particles in random places on the canvas
-     * @param target Number of particles to generate
+     * Pushes a given number of enitites in random places on the canvas
+     * @param target Number of entites to generate
      */
-    public generateRandomParticles() {
-        let target = this.performance.has() ?  this.performance.load() : config.max_particles
-        for (let i = 0; i < target; i++) {
-            this.particles.push(new Particle(
-                this.random(this.width),
-                this.random(this.height)
-            ))
-        }
-    }
-
-    public generateRandomBoids() {
-        for (let i = 0; i < 200; i++) {
-            this.particles.push(new Boid(
-                this.random(this.width),
-                this.random(this.height)
-            ))
-        }
-    }
+    abstract generateRandom()
 
     /**
-     * Shuffles particle positions to align randomly 
+     * Shuffles entities positions to align randomly 
      */
-    public shuffleParticlePoses(){
-        // Shuffle particles to make transitions ... cooler :D
-        this.particles = arrayShuffle(this.particles)
-    }
-
-    /**
-     * Converts a coordonate from an arbitrary scale to one fitting the area managed by 
-     * @param x x pos in arbitrary canvas space to the aria managed by the particle handle
-     * @param y y pos in arbitrary canvas space to the aria managed by the particle handle
-     * @param xTotal Width of arbitrary space
-     * @param yTotal Height of arbitrary space
-     * @returns Converted coordonates
-     */
-    public convertCords(x: number, y: number, xTotal: number, yTotal: number): [number, number] {
-        return [Math.round((x / xTotal) * this.width), Math.round((y / yTotal) * this.height)];
+    public shuffleEntitiyPoses(){
+        // Shuffle entitities to make transitions look ... cooler
+        this.entities = arrayShuffle(this.entities)
     }
 
     /**
      * Destroys all particles managed by handler
      */
     public destroy(){
-        this.particles.forEach(particle => {particle.destroy()})
-        this.particles = []
+        this.entities.forEach(entity => {entity.destroy()})
+        this.entities = []
     }
 
     /**
      * Runs a callback against each particle
      * @param {function} fn The callback to run the function against
      */
-    each(fn: (p:Particle) => void): void{
-        this.particles.forEach(fn)
+    each(fn: (p: T) => void): void{
+        this.entities.forEach(fn)
     }
 
     /**
@@ -208,28 +131,17 @@ class EntityHandler<T> {
     public resize(width: number, height: number){
         this.width = width
         this.height = height
-        this.handleSlideBreakpoint()
-        this.refresh()
-        
     }
 
     /**
-     * Recomputes internal image data
-     */
-    public refresh(){
-        this.particleImage.rescale()
-        this.particleImage.retargetParticles()
-    }
-
-    /**
-     * Gets the width of the area bounded by the particle handler
+     * Gets the width of the area bounded by the entity handler
      */
     public getWidth(): number{
         return this.width
     }
 
     /**
-     * Gets the height of the area bounded by the particle handler
+     * Gets the height of the area bounded by the entity handler
      */
      public getHeight(): number{
         return this.height
@@ -249,25 +161,27 @@ class EntityHandler<T> {
      * @param x Center of the circle x pos
      * @param y Center of the circle y pos
      * @param r radius
-     * @returns {Particle[]}
+     * @param excludeSelf Excludes direct matches
+     * @returns {Entity[]}
      */
-    public getParticlesInRange(x: number, y: number, r: number): Particle[]{
-        return this.particles.filter((particle) => {
-            return Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y)) < r
+    public getEntitiesInRange(x: number, y: number, r: number, excludeSelf: boolean = false): T[]{
+        return this.entities.filter((particle) => {
+            const distance = Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y))
+            return distance < r && (!excludeSelf || distance !== 0)
         })
     }
 
     /**
      * Gets the closest particle in a given radius
      */
-    public getClosestParticleInRange(x: number, y: number, r: number): Particle|null{
-        let closest: Particle | null = null
+    public getClosestEntityInRange(x: number, y: number, r: number): T | null{
+        let closest: T | null = null
         let closestDistance = Infinity
-        for(let particle of this.particles){
-            const distance = Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y))
+        for(let entity of this.entities){
+            const distance = Math.hypot(Math.abs(x - entity.x), Math.abs(y - entity.y))
             if(distance < r && distance < closestDistance && distance !== 0){
                 closestDistance = distance
-                closest = particle
+                closest = entity
             }
         }
 
@@ -275,20 +189,9 @@ class EntityHandler<T> {
     }
 
     /**
-     * Loads a new image for a given target
-     * @param img Path to image
+     * Update state of entity updates
      */
-    public loadTargetImage(img: string){
-        this.particleImage.loadTargetImage(img)
-    }
-
-    /**
-     * Gets the currently selected image
-     * @returns the currently selected image
-     */
-    public getCurrentlySelectedImage():string {
-        return this.particleImage.getCurrentlySelectedImage()
-    }
+    refresh(){}
 }
 
 export default EntityHandler

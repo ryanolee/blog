@@ -1,20 +1,42 @@
-import ParticleHandler from "./ParticleHandler";
 import config from "./config";
-
-const PERFORMANCE_CACHE_KEY = "ParticlePerf-v2"
+import Entity from "./entity/Entity";
+import EntityHandler from "./handler/EntityHandler";
 
 /**
- * Handler to compute how many particles a given device can actually handle and scale back from the max until we have a known good amount
+ * Handler to compute how many entities a given device can actually handle and scale back from the max until we have a known good amount
  */
-class ParticlePerformance {
-    protected ph: ParticleHandler
+class EntityPerformance {
+    /**
+     * The entity handler bound to the handler
+     */
+    protected entityHandler: EntityHandler<Entity>
+
+    /**
+     * A buffer to store frame times under for testing system performance
+     */
     protected frameTimes: number[]
+
+    /**
+     * If cache has loaded
+     */
     protected loaded: boolean
 
-    constructor(ph: ParticleHandler){
-        this.ph = ph
+    /**
+     * The cache key for number of entities loaded
+     */
+    protected cacheKey: string
+
+    /**
+     * The minumum count of entities that can be rendered
+     */
+    protected minimum: number
+
+    constructor(entityHandler: EntityHandler<Entity>, cacheKey: string, minimum: number){
+        this.entityHandler = entityHandler
         this.frameTimes = []
         this.loaded = false
+        this.cacheKey = cacheKey
+        this.minimum = minimum
     }
 
     public tick(){
@@ -29,23 +51,23 @@ class ParticlePerformance {
             // In the event we are still too slow begin a cleanup
             if(avg > this.getTarget()){
                 let decrementAmount = this.getDecrementAmount() * Math.max(Math.ceil(avg - this.getTarget()), 10)
-                if(this.ph.getParticleCount() - this.getDecrementAmount() < config.min_particles){
+                if(this.entityHandler.getEntityCount() - this.getDecrementAmount() < this.minimum){
 
                     // Do not allow us to drop out too many particles
-                    decrementAmount = this.ph.getParticleCount() - config.min_particles
-                    console.log(`Poor performance detected bare minimum of ${config.min_particles} set to be used by config handler`)
+                    decrementAmount = this.entityHandler.getEntityCount() - this.minimum
+                    console.log(`Poor performance detected bare minimum of ${this.minimum} set to be used by config handler`)
                     this.loaded = true
-                    this.save(config.min_particles)
+                    this.save(this.minimum)
                 }
 
-                this.ph.removeParticles(decrementAmount)
-                this.ph.refresh()
-                console.log(`Particle count reduced to: ${this.ph.getParticleCount()}`)
+                this.entityHandler.removeEntities(decrementAmount)
+                this.entityHandler.refresh()
+                console.log(`Particle count reduced to: ${this.entityHandler.getEntityCount()}`)
                 this.frameTimes = []
             } else {
-                console.log(`Scaled particle performance. System can handle ${this.ph.getParticleCount()} particles @ ${config.frame_rate} fps`)
+                console.log(`Scaled particle performance. System can handle ${this.entityHandler.getEntityCount()} particles @ ${config.frame_rate} fps`)
                 // Otherwise save the known good amount and mark the request as loaded
-                this.save(this.ph.getParticleCount())
+                this.save(this.entityHandler.getEntityCount())
                 this.loaded = true
             }
         }
@@ -74,7 +96,7 @@ class ParticlePerformance {
      * @param goodCount 
      */
     protected save(goodCount: number) {
-        localStorage.setItem(PERFORMANCE_CACHE_KEY, JSON.stringify(goodCount))
+        localStorage.setItem(this.cacheKey, JSON.stringify(goodCount))
     }
 
     /**
@@ -84,7 +106,7 @@ class ParticlePerformance {
     public load(): number {
         if(this.has()){
             this.loaded = true
-            return JSON.parse(localStorage.getItem(PERFORMANCE_CACHE_KEY))
+            return JSON.parse(localStorage.getItem(this.cacheKey))
         }
         return -1
         
@@ -95,8 +117,8 @@ class ParticlePerformance {
      * @returns If the instance has a cached trigger or not
      */
     public has(): boolean{
-        return localStorage.getItem(PERFORMANCE_CACHE_KEY) !== null
+        return localStorage.getItem(this.cacheKey) !== null
     }
 }
 
-export default ParticlePerformance
+export default EntityPerformance

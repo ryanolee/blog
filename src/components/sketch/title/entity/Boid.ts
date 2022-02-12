@@ -1,6 +1,7 @@
+import PVector from "pvectorjs";
 import config from "../config";
-import Particle from "./Particle";
-import ParticleHandler from "./../entity/ParticleHandler";
+import BoidHandler from "../handler/BoidHandler"
+import Entity from "./Entity";
 
 /*
  * @name Interactivity 1
@@ -40,59 +41,184 @@ import ParticleHandler from "./../entity/ParticleHandler";
 //  
 //}
 
-export default class Boid extends Particle{
+export default class Boid extends Entity{
+    public position: PVector
+    public velocity: PVector
+    public acceleration: PVector
+
     public rotation: number;
 
     constructor(x: number, y: number, xv: number = 0, yv: number = 0){
         super(x, y, xv, yv)
+        this.position = new PVector(x, y)
+        this.velocity = new PVector(20, 20)
+        this.acceleration = new PVector()
         this.rotation = Math.floor(Math.random() * 360)
     }
 
 
-    public update(ph: ParticleHandler): void {
-        // Compute motion vector
-        this.xv = Math.cos((2 * Math.PI) / 360 * this.rotation) * config.boid_speed
-        this.yv = Math.sin((2 * Math.PI) / 360 * this.rotation) * config.boid_speed
-
-        // Move towards closest boid in range
-        //const closestBoid : Boid = ph.getClosestParticleInRange(this.x, this.y, config.boid_sight_range) as Boid
+    public update(bh: BoidHandler): void {
+        const closestBoids : Boid[] = bh.getEntitiesInRange(this.x, this.y, config.boid_sight_range, true) as Boid[]
         
-        //if(closestBoid !== null){
-        //    this.rotation += (closestBoid.rotation - this.rotation) / 45
-        //}
-
-        const closestBoids : Boid[] = ph.getParticlesInRange(this.x, this.y, config.boid_sight_range) as Boid[]
-        const avg = closestBoids.reduce((acc, boid) => acc + boid.rotation , 0) / closestBoids.length
+        if(bh.entities[0].x === this.x){
+            console.log(closestBoids)
+        }
+        
+        //////////////////
+        //// separation //
+        //////////////////
+        //let separation = this.separate(closestBoids).mult(1.5)
 //
-        this.rotation += (avg - this.rotation)  / 45
-        if(this.rotation > 360){
-            this.rotation -= 360
-        }
+        /////////////////
+        //// alignment //
+        /////////////////
+        //let alignment = this.align(closestBoids).mult(0)
+//
+        ////////////////
+        //// cohesion //
+        ////////////////
+        //let cohesion = this.cohesion(closestBoids).mult(0)
 
-        if(this.rotation < 0) {
-            this.rotation + 360
+
+        this.acceleration
+            .add(this.pull(closestBoids).mult(-0.2))
+            .add(this.wind())
+        //    .add(separation)
+        //    .add(alignment)
+        //    .add(cohesion)
+        
+    }
+
+    move(bh: BoidHandler){
+        this.velocity
+            .add(this.acceleration)
+            .maxMag(config.boid_speed)
+
+        this.position.add(this.velocity)
+        this.x = this.position.x
+        this.y = this.position.y
+        
+        const w = bh.getWidth()
+        const h = bh.getHeight()
+
+        // Wrap screen
+        this.y = (this.y + h) % h
+        this.x = (this.x + w) % w
+
+        // Reset accelaration
+        this.acceleration.mult(0)//.maxMag(5)
+    }
+
+    protected pull(boids: Boid[]){
+        let pull = new PVector(0, 0)
+        for (let boid of boids) {
+            pull.sub(this.position.copy().sub(boid.position).norm().div(boids.length))
         }
+        return pull
+    }
+
+    protected wind(){
+        let wind = new PVector(-0.01, 0)
+        return wind
+    }
+
+    //protected separate(boids: Boid[]): PVector{
+    //    let avoidence = new PVector();
+    //    let avoidenceCount = 0;
+//
+    //    for (let boid of boids) {
+    //        const distance = this.position.copy().dist(boid.position)
+    //        console.log(boids)
+    //        console.log([distance, config.boid_avoid_range, (distance > 0), (distance < config.boid_avoid_range)])
+    //        if ((distance > 0) && (distance < config.boid_avoid_range)) {
+    //            const diff = this.position.clone()
+    //                .sub(boid.position)
+    //                .norm()
+    //                .div(distance)
+//
+    //            avoidence.add(diff)
+    //            avoidenceCount++
+    //        }
+    //    }
+//
+    //    if (avoidenceCount > 0) {
+    //        avoidence.div(avoidenceCount);
+    //    }
+//
+    //    if (avoidence.mag() > 0) {
+    //
+    //        avoidence.norm()
+    //            .mult(config.boid_speed)
+    //            .sub(this.velocity)
+    //            .maxMag(config.boid_speed)
+    //    }
+//
+    //    return avoidence
+    //}
+//
+    //protected align(boids: Boid[]): PVector{
+    //    const average = new PVector()
+//
+    //    if(boids.length === 0){
+    //        return average
+    //    }
+//
+    //    for(let boid of boids){
+    //        average.add(boid.velocity)
+    //    }
+//
+    //    average.div(boids.length)
+    //        .norm()
+    //        .mult(config.boid_speed)
+//
+    //    const target = average.sub(this.velocity)
+    //    target.maxMag(config.boid_speed)
+//
+    //    return target
+    //}
+//
+    //protected cohesion(boids: Boid[]): PVector {
+    //    const cohesion = new PVector() 
+//
+    //    if(boids.length === 0){
+    //        return cohesion
+    //    }
+//
+    //    for(let boid of boids){
+    //        cohesion.add(boid.position)
+    //    }
+//
+    //    cohesion.div(boids.length)
+//
+    //    // Seek
+    //    let desired = cohesion.sub(this.position)
+//
+    //    desired
+    //        .norm()
+    //        .mult(config.boid_speed)
+//
+    //    let steer = desired.sub(this.velocity)
+    //    steer.maxMag(config.boid_speed)
+    //    return steer
+    //}
+
+    /**
+     * Update graphic state to trigger redraw
+     */
+     draw() {
+        //this.graphic.x = this.x
+        //this.graphic.y = this.y
+        //this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
+        this.graphic.clear()
+        this.graphic.beginFill(this.color)
+        this.graphic.drawCircle(this.x, this.y, config.particle_size)
+        this.graphic.lineStyle(config.particle_size, this.color)
+        this.graphic.moveTo(this.x, this.y)
+        this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
+        this.graphic.endFill()  
     }
 
     protected updateTurn(){
         this.rotation
-    }
-
-    public applyForce(xv: any, yv: any): void {}
-    public aimTowards(w, h){
-        this.x += this.xv
-        this.y += this.yv
-        
-        if(this.y > h){
-            this.y = 0 
-        } else if( this.y < 0){
-            this.y = h
-        }
-
-        if(this.x > w){
-            this.x = 0 
-        } else if( this.x < 0){
-            this.x = w
-        }
     }
 }

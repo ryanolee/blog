@@ -1,6 +1,6 @@
 
 import React, {MutableRefObject} from "react"
-import ParticleHandler from "../sketch/title/ParticleHandler"
+import ParticleHandler from "../sketch/title/handler/ParticleHandler"
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import {IconButton} from "@material-ui/core"
 import {Slide} from './../../interfaces/Header'
