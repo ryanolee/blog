@@ -4,8 +4,13 @@ import arrayShuffle from 'array-shuffle'
 import config from '../config'
 import Boid from '../entity/Boid'
 import EntityHandler from './EntityHandler'
+import PVector from "pvectorjs";
+
 
 class BoidHandler extends EntityHandler<Boid> {
+
+    protected mouseX: number
+    protected mouseY: number
 
     /**
      * @param width Width of canvas to handle
@@ -17,13 +22,29 @@ class BoidHandler extends EntityHandler<Boid> {
     }
 
     /**
+     * Sets the mouse position
+     * @param x 
+     * @param y 
+     */
+    public setMousePos(x: number, y: number){
+        this.mouseX = x
+        this.mouseY = y
+    }
+
+    /**
      * Updates motion of particles 
      */
     public update(){
         this.tick++
-        
+        const boids = this.getEntitiesInRange(this.mouseX, this.mouseY, 300)
+        boids.forEach(boid => {
+            const diff = new PVector(this.mouseX, this.mouseY).sub(boid.position)
+            boid.acceleration.sub(diff.norm().mult(0.4))
+        })
+        console.log(this.entities[0])
         this.each((boid) => boid.update(this))
         this.each((boid) => boid.move(this))
+        
         //debugger
         // Tick the performance handle
         //this.performance.tick()

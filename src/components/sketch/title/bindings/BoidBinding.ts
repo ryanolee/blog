@@ -25,6 +25,8 @@ export default class BoidBinding extends EntityBinding<BoidHandler>{
 			this.handler.current.draw()
 		}))
 
+		
+
 		this.resize = debounce(this.getListener(() => {
 			// Force 16:9 aspect ratio
 			let w = Math.round(this.container.current.clientWidth)
@@ -35,6 +37,12 @@ export default class BoidBinding extends EntityBinding<BoidHandler>{
 
 			this.handler.current.resize(w, h)
 		}), 200, false)
+
+		this.app.current.stage.interactive = true
+		this.app.current.stage.on('pointermove', (e) => {
+			const evtData = e.data.global
+			this.handler.current.setMousePos(evtData.x, evtData.y)
+		})
 
 		window.addEventListener('resize', this.resize)
     }

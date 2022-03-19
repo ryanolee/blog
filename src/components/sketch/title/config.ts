@@ -63,7 +63,7 @@ export default {
     /**
      * The speed boids move at
      */
-    boid_speed: 3,
+    boid_speed: 5,
 
     boid_avoid_range: 80,
 
