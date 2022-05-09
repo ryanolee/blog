@@ -1,21 +1,22 @@
 
 import React, {MutableRefObject} from "react"
-import ParticleHandler from "../sketch/title/handler/ParticleHandler"
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import {IconButton} from "@material-ui/core"
 import {Slide} from './../../interfaces/Header'
+import EntityHandler from "../sketch/title/handler/EntityHandler";
+import ParticleImageBehaviour from "../sketch/title/behaviours/ParticleImageBehaviour";
 
 interface HeaderButtonProps{
-    ph: MutableRefObject<ParticleHandler>,
+    eh: MutableRefObject<EntityHandler>,
     targetSlide: Slide,
     index: number
     selected?: boolean,
     setSelected: any
 }
 
-export default ({ph, targetSlide, index, setSelected, selected = false}: HeaderButtonProps) => {
+export default ({eh, targetSlide, index, setSelected, selected = false}: HeaderButtonProps) => {
     const handleOnClick = () => {
-        ph.current.setSlide(targetSlide)
+        eh.current.setBehaviour(new ParticleImageBehaviour(eh.current, targetSlide))
         setSelected(index)
     }
 

@@ -1,9 +1,9 @@
-import ParticleHandler from "./handler/ParticleHandler"
+import EntityHandler from "./handler/EntityHandler"
 import md5 from "md5"
-import { IGLUniformData } from "@pixi/core"
+import HoverAroundPointBehaviour from "./behaviours/HoverAroundPointBehaviour"
 
 class ParticleImage {
-    protected ph: ParticleHandler
+    protected ph: EntityHandler
     protected width: number
     protected height: number
     protected imageWidth: number
@@ -19,7 +19,7 @@ class ParticleImage {
      */
     protected selectedImage: string
 
-    constructor(ph: ParticleHandler){
+    constructor(ph: EntityHandler){
         this.ph = ph
         this.width = 1
         this.height = 1
@@ -125,9 +125,9 @@ class ParticleImage {
         for (let i = 0; i < this.ph.entities.length; i++) {
             //console.log(Math.ceil(((valid_points.length / this.particles.length) * i) - 1));
             let selectedPixel = valid_points[Math.floor(((valid_points.length / this.ph.entities.length) * i))];
-            this.ph.entities[i].updateTargetPoint(selectedPixel[0], selectedPixel[1])
+            this.ph.entities[i].setBehaviour(new HoverAroundPointBehaviour(this.ph.entities[i], selectedPixel[0], selectedPixel[1]))
             if(forceVectorPush){
-                this.ph.entities[i].overrideForce(
+                this.ph.entities[i].setForce(
                     (selectedPixel[0]-this.ph.entities[i].x)/30,
                     (selectedPixel[1]-this.ph.entities[i].y)/30
                 )

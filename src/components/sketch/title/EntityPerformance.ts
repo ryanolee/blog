@@ -9,7 +9,7 @@ class EntityPerformance {
     /**
      * The entity handler bound to the handler
      */
-    protected entityHandler: EntityHandler<Entity>
+    protected entityHandler: EntityHandler
 
     /**
      * A buffer to store frame times under for testing system performance
@@ -31,11 +31,10 @@ class EntityPerformance {
      */
     protected minimum: number
 
-    constructor(entityHandler: EntityHandler<Entity>, cacheKey: string, minimum: number){
+    constructor(entityHandler: EntityHandler, minimum: number){
         this.entityHandler = entityHandler
         this.frameTimes = []
         this.loaded = false
-        this.cacheKey = cacheKey
         this.minimum = minimum
     }
 
@@ -61,6 +60,7 @@ class EntityPerformance {
                 }
 
                 this.entityHandler.removeEntities(decrementAmount)
+
                 this.entityHandler.refresh()
                 console.log(`Particle count reduced to: ${this.entityHandler.getEntityCount()}`)
                 this.frameTimes = []

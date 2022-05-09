@@ -1,5 +1,7 @@
 import * as PIXI from "pixi.js"
 import randomcolor from 'randomcolor' 
+import EntityBehaviour from "../behaviours/EntityBehaviour";
+import config from "../config";
 import EntityHandler from "./../handler/EntityHandler";
 
 class Entity {
@@ -34,6 +36,11 @@ class Entity {
     public graphic: PIXI.Graphics;
 
     /**
+     * Bound behaviour for entity
+     */
+    public behaviour: EntityBehaviour = null
+
+    /**
      * 
      * @param {number} x Initial X pos
      * @param y Initial Y pos
@@ -52,26 +59,52 @@ class Entity {
         let line  = new PIXI.Graphics();
         let color = randomcolor({luminosity: 'light'}).replace("#", '')
         this.color = parseInt(`0x${color}`)
-        //console.log(color)
-        //line.beginFill(parseInt(`0x${color}`));
-        //line.lineStyle(1);
-        //line.drawCircle(0, 0, config.particle_size);
-        //line.lineStyle(config.particle_size, parseInt(`0x${color}`))
-        //line.line
-        //line.endFill();
-
+        line.drawCircle(this.x, this.y, config.particle_size)
         this.graphic = line
     }
 
     /**
      * Updates current position
      */
-    update(_ph: EntityHandler<unknown>) {}
+    update(eh: EntityHandler) {
+        if(this.behaviour !== null){
+            this.behaviour.update(eh)
+        }
+    }
 
     /**
-     * Update graphic state to trigger redraw
+     * Applies a set force vector to the particle
+     * @param xv 
+     * @param yv 
      */
-    draw() {}
+    applyForce(xv, yv){
+        this.xv += xv 
+        this.yv += yv
+    }
+
+    /**
+     * Directly sets a given force
+     * @param xv 
+     * @param yv 
+     */
+    setForce(xv, yv){
+        this.xv += xv 
+        this.yv += yv
+    }
+
+    /**
+     * 
+     * @param behaviour 
+     */
+    move(){
+        this.x += this.xv
+        this.y += this.yv
+    }
+
+
+    setBehaviour(behaviour: EntityBehaviour){
+        this.behaviour = behaviour
+    }
 
     /**
      * Yields graphic to use in rendering
@@ -84,8 +117,23 @@ class Entity {
     /**
      * Cleans up particle
      */
-     destroy(){
+    destroy(){
         return this.graphic.destroy(true)
+    }
+
+    /**
+     * Update graphic state to trigger redraw
+     */
+     draw() {
+        this.graphic.x = this.x
+        this.graphic.y = this.y
+        //this.graphic.clear()
+        //this.graphic.beginFill(this.color)
+        //
+        //this.graphic.lineStyle(config.particle_size, this.color)
+        //this.graphic.moveTo(this.x, this.y)
+        //this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
+        //this.graphic.endFill()
     }
 }
 

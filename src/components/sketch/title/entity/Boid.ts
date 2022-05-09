@@ -3,44 +3,6 @@ import config from "../config";
 import BoidHandler from "../handler/BoidHandler"
 import Entity from "./Entity";
 
-/*
- * @name Interactivity 1
- * @frame 720,425
- * @description The circle changes color when you click on it.
- */
-
-// for red, green, and blue color values
-//let r = 0
-//let W = 720
-//let H = 400
-//let x = 0
-//let y = 0
-//function setup() {
-//  createCanvas(720, 400);
-//  // Pick colors randomly
-//}
-//
-//function draw() {
-//  clear()
-//  x= cos((2 * PI) /360 * r);
-//  y= sin((2 * PI) /360 * r);
-//  line(W/2, H/2, (W/2) + x * 100, (H/2) + y *100)
-//  
-//  r+= 1
-//  console.log(r)
-//  if(r === 360){
-//    r=0
-//  }
-//}
-//
-//// When the user clicks the mouse
-//function mousePressed() {
-//  // Check if mouse is inside the circle
-//  
-//  console.log(r)
-//  
-//}
-
 export default class Boid extends Entity{
     public position: PVector
     public velocity: PVector
@@ -191,9 +153,6 @@ export default class Boid extends Entity{
      * Update graphic state to trigger redraw
      */
      draw() {
-        //this.graphic.x = this.x
-        //this.graphic.y = this.y
-        //this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
         this.graphic.clear()
         this.graphic.beginFill(this.color)
         this.graphic.drawCircle(this.position.x, this.position.y, config.particle_size)

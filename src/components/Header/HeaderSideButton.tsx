@@ -3,12 +3,13 @@ import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 
 import {Slide} from './../../interfaces/Header'
 import React, { MutableRefObject } from 'react'
-import ParticleHandler from '../sketch/title/ParticleHandler'
 import { makeStyles } from '@material-ui/core/styles';
 import { IconButton } from '@material-ui/core';
+import ParticleImageBehaviour from '../sketch/title/behaviours/ParticleImageBehaviour';
+import EntityHandler from '../sketch/title/handler/EntityHandler';
 
 interface HeaderSideButtonProps {
-    ph: MutableRefObject<ParticleHandler>,
+    eh: MutableRefObject<EntityHandler>,
     slides: Slide[],
     setSlide: any
     slide: number
@@ -37,7 +38,7 @@ const useStyles = makeStyles({
     }
   });
 
-export default ({ph, variant, slide, setSlide, slides} : HeaderSideButtonProps) => {
+export default ({eh, variant, slide, setSlide, slides} : HeaderSideButtonProps) => {
     
     const {
         centeredArrow,
@@ -57,7 +58,7 @@ export default ({ph, variant, slide, setSlide, slides} : HeaderSideButtonProps) 
         }
 
         setSlide(nextIndex)
-        ph.current.setSlide(slides[slide])
+        eh.current.setBehaviour(new ParticleImageBehaviour(eh.current, slides[slide]))
     }
 
     const targetIcon = variant === 'next' ? 

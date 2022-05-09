@@ -3,14 +3,29 @@ import EntityPerformance from '../EntityPerformance'
 import arrayShuffle from 'array-shuffle'
 import * as PIXI from "pixi.js"
 import Entity from '../entity/Entity'
+import ParticleImage from '../ParticleImage'
+import { Slide } from '../../../../interfaces/Header'
+import config from '../config'
+import HandlerBehaviour from '../behaviours/HandlerBehaviour'
+import RunAwayBehaviour from '../behaviours/RunAwayBehavior'
 
 
 
-abstract class EntityHandler<T> {
+class EntityHandler {
+    /**
+     * The x position of the mouse
+     */
+    protected mouseX: number
+
+    /**
+     * The Y position of the mouse
+     */
+    protected mouseY: number
+
     /**
      * Entities managed by handler
      */
-    public entities: (T&Entity)[]
+    public entities: Entity[]
 
     /**
      * Frames rendered since the website loaded
@@ -32,11 +47,21 @@ abstract class EntityHandler<T> {
      */
     protected performance: EntityPerformance | null = null;
 
+    protected behaviour: HandlerBehaviour | null
+
+    protected app: PIXI.Application
+
+    /**
+     * Entities marked for death
+     */
+    public purgeQueue: Entity[] = []
+
     /**
      * @param width Width of canvas to handle
      * @param height Height of canvas to handle
      */
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, app: PIXI.Application) {
+        this.app = app
         this.entities = []
         this.width = width
         this.height = height
@@ -52,28 +77,33 @@ abstract class EntityHandler<T> {
             entity.update(this)
         }
 
+        for(let entity of this.purgeQueue){
+            entity.update(this)
+        }
+
+        
+
         // Tick the performance handle
-        this.performance.tick()
+        //this.performance.tick()
     }
 
     /**
      * Removes a given number of entities from the handler
      * @param count 
      */
-    public removeEntities(count: number){
+    public removeEntities(count: number, instant = true){
         // Tear out entities
-        this.entities.splice(0, count).forEach((entity) => {
-            entity.destroy()
-        })
-    }
-
-    /**
-     * Render line against config
-     */
-    public registerEntities(app: PIXI.Application){
-        this.entities
-            .map(entity => entity.getGraphic())
-            .forEach((entity) => {app.stage.addChild(entity)})
+        const particlesToDestroy = this.entities.splice(0, count)
+        
+        if(instant){
+            this.entities.forEach((entity) => {
+                entity.destroy()
+            })  
+        } else {
+            particlesToDestroy.forEach(entity => entity.setBehaviour(new RunAwayBehaviour(entity)))
+            this.purgeQueue.push(...particlesToDestroy)
+        }
+        
     }
 
     /**
@@ -81,6 +111,10 @@ abstract class EntityHandler<T> {
      */
     public draw(){
         this.entities.forEach((entity) => {
+            entity.draw()
+        })
+
+        this.purgeQueue.forEach((entity) => {
             entity.draw()
         })
     }
@@ -92,12 +126,6 @@ abstract class EntityHandler<T> {
     public getEntityCount(): number {
         return this.entities.length
     }
-
-    /**
-     * Pushes a given number of enitites in random places on the canvas
-     * @param target Number of entites to generate
-     */
-    abstract generateRandom()
 
     /**
      * Shuffles entities positions to align randomly 
@@ -116,21 +144,19 @@ abstract class EntityHandler<T> {
     }
 
     /**
-     * Runs a callback against each particle
-     * @param {function} fn The callback to run the function against
+     * 
+     * @param entity Removes item from the purge queue
      */
-    each(fn: (p: T) => void): void{
-        this.entities.forEach(fn)
+    public flushEntity(entity: Entity){
+        this.purgeQueue = this.purgeQueue.filter(item => entity !== item)
     }
 
     /**
-     * Resizes canvas
-     * @param width 
-     * @param height 
+     * Runs a callback against each particle
+     * @param {function} fn The callback to run the function against
      */
-    public resize(width: number, height: number){
-        this.width = width
-        this.height = height
+     public each(fn: (p: Entity) => void): void{
+        this.entities.forEach(fn)
     }
 
     /**
@@ -164,7 +190,7 @@ abstract class EntityHandler<T> {
      * @param excludeSelf Excludes direct matches
      * @returns {Entity[]}
      */
-    public getEntitiesInRange(x: number, y: number, r: number, excludeSelf: boolean = false): T[]{
+    public getEntitiesInRange(x: number, y: number, r: number, excludeSelf: boolean = false): Entity[]{
         return this.entities.filter((particle) => {
             const distance = Math.hypot(Math.abs(x - particle.x), Math.abs(y - particle.y))
             return distance < r && (!excludeSelf || distance !== 0)
@@ -174,8 +200,8 @@ abstract class EntityHandler<T> {
     /**
      * Gets the closest particle in a given radius
      */
-    public getClosestEntityInRange(x: number, y: number, r: number): T | null{
-        let closest: T | null = null
+    public getClosestEntityInRange(x: number, y: number, r: number): Entity | null{
+        let closest: Entity | null = null
         let closestDistance = Infinity
         for(let entity of this.entities){
             const distance = Math.hypot(Math.abs(x - entity.x), Math.abs(y - entity.y))
@@ -189,9 +215,86 @@ abstract class EntityHandler<T> {
     }
 
     /**
-     * Update state of entity updates
+     * Sets the mouse position
+     * @param x 
+     * @param y 
      */
-    refresh(){}
+    public setMousePos(x: number, y: number){
+        this.mouseX = x
+        this.mouseY = y
+    }
+
+
+    /**
+     * Pushes a given number of particles in random places on the canvas
+     * @param target Number of particles to generate
+     */
+    public generateRandom() {
+        if(this.performance === null){
+            this.performance = new EntityPerformance(this, config.particle_performace_cache_key, config.min_particles)
+        }
+//
+        let target = this.performance.has() ?  this.performance.load() : config.max_particles
+        //for (let i = 0; i < target; i++) {
+        for (let i = 0; i < 4000; i++) {
+            this.createEntity(
+                this.random(this.width),
+                this.random(this.height)
+            )
+        }
+    }
+    
+
+    /**
+     * Creates an enitity and registers it with the thing
+     * @param x 
+     * @param y 
+     * @returns 
+     */
+    public createEntity(x: number, y: number){
+        const entity = new Entity(x, y)
+
+        this.entities.push(entity)
+        const graphic = entity.getGraphic()
+        this.app.stage.addChild(graphic)
+        return entity
+    }
+
+    /**
+     * Converts a coordonate from an arbitrary scale to one fitting the area managed by 
+     * @param x x pos in arbitrary canvas space to the aria managed by the particle handle
+     * @param y y pos in arbitrary canvas space to the aria managed by the particle handle
+     * @param xTotal Width of arbitrary space
+     * @param yTotal Height of arbitrary space
+     * @returns Converted coordonates
+     */
+    public convertCords(x: number, y: number, xTotal: number, yTotal: number): [number, number] {
+        return [Math.round((x / xTotal) * this.width), Math.round((y / yTotal) * this.height)];
+    }
+
+    /**
+     * Resizes canvas
+     * @param width 
+     * @param height 
+     */
+    public resize(width: number, height: number){
+        this.width = width
+        this.height = height
+        this?.behaviour.onResize()
+        
+    }
+
+    /**
+     * Gets the current handler behaviour
+     * @returns behaviour
+     */
+    public getBehaviour(): HandlerBehaviour{
+        return this.behaviour
+    }
+
+    public setBehaviour(behaviour: HandlerBehaviour){
+        this.behaviour = behaviour
+    }
 }
 
 export default EntityHandler

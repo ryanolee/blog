@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
 import debounce from "debounce"
 import * as PIXI from "pixi.js"
-import ParticleHandler from "../sketch/title/handler/ParticleHandler"
 import { Box } from "@material-ui/core"
 import HeaderControl from "./HeaderControl"
 import { makeStyles } from '@material-ui/core/styles'
-import Particle from "../sketch/title/entity/Particle"
-import ParticleBinding from "../sketch/title/bindings/ParticleBinding"
-import BoidHandler from "../sketch/title/handler/BoidHandler"
-import BoidBinding from "../sketch/title/bindings/BoidBinding"
+import EntityHandler from "../sketch/title/handler/EntityHandler"
+import EntityBinding from "../sketch/title/bindings/EntityBinding"
 
 interface HeaderProps {}
 
@@ -44,28 +41,20 @@ const useStyles = makeStyles({
 
 export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 	// @todo Migrate to react oritented approach
-	let ph = useRef<ParticleHandler>(null);
-	let bh = useRef<BoidHandler>(null);
+	let eh = useRef<EntityHandler>(null);
 	let app = useRef<PIXI.Application>(null)
 	let container = useRef<HTMLDivElement>(null)
 
-	let particleBinding = new ParticleBinding(
+	let entityBinding = new EntityBinding(
 		container,
 		app,
-		ph
-	)
-
-	let boidBinding = new BoidBinding(
-		container,
-		app,
-		bh
+		eh
 	)
 	
 	//Cleanup on unmount
 	useEffect(() => {
 		return () => {
-			particleBinding.teardown()
-			boidBinding.teardown()
+			entityBinding.teardown()
 			app.current.stop()
         	app.current.destroy(true, true)
 			app.current = null
@@ -92,8 +81,8 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 		//particleBinding.init()
 		//particleBinding.enable()
 
-		boidBinding.init()
-		boidBinding.enable()
+		entityBinding.init()
+		entityBinding.enable()
 	});
 
 	let classes = useStyles()
@@ -101,7 +90,7 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 	return (
 		<Box className={classes.container}>
 			<div ref={container} style={{ width: "100vw", height: "calc(100vh - 20px)", overflow: "hidden" }} />
-			<HeaderControl ph={ph} slides={slides} />
+			<HeaderControl eh={eh} slides={slides} />
 		</Box>
 	)
 }
