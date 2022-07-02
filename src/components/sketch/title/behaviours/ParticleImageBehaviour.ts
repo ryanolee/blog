@@ -51,7 +51,7 @@ class ParticleImageBehaviour extends HandlerBehaviour {
      * @param params 
      */
     public handleSlideBreakpoint() {
-        let targetBreakpoints = Object.keys(this.slide.breakpoints)
+        let targetBreakpoints = Object.keys(this?.slide?.breakpoints ?? {})
             .map(i => parseInt(i))
             .sort((a, b) => {return a - b})
             
@@ -64,8 +64,8 @@ class ParticleImageBehaviour extends HandlerBehaviour {
             }
         }
         
-        let toLoad = this.slide.breakpoints[targetBreakpoint]
-        let path = this.slide.path.split(".")
+        let toLoad = this?.slide?.breakpoints[targetBreakpoint]
+        let path = this?.slide?.path?.split(".") ?? ""
         let loadPath = `${path[0]}-${toLoad}.${path[1]}`
         this.particleImage.loadTargetImage(loadPath)
     }

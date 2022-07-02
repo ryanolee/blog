@@ -38,7 +38,7 @@ class Entity {
     /**
      * Bound behaviour for entity
      */
-    public behaviour: EntityBehaviour = null
+    public behaviour: EntityBehaviour | null = null
 
     /**
      * 
@@ -58,10 +58,15 @@ class Entity {
     setupShape(){
         let line  = new PIXI.Graphics();
         let color = randomcolor({luminosity: 'light'}).replace("#", '')
-        this.color = parseInt(`0x${color}`)
-        line.drawCircle(this.x, this.y, config.particle_size)
+        //console.log(color)
+        line.beginFill(parseInt(`0x${color}`));
+        //line.lineStyle(1);
+        line.drawCircle(0, 0, config.particle_size);
+        line.endFill();
+
         this.graphic = line
     }
+
 
     /**
      * Updates current position

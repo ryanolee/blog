@@ -106,7 +106,8 @@ class EntityPerformance {
     public load(): number {
         if(this.has()){
             this.loaded = true
-            return JSON.parse(localStorage.getItem(this.cacheKey))
+            const data = localStorage.getItem(this.cacheKey)
+            return JSON.parse(data ?? "")
         }
         return -1
         
