@@ -9,7 +9,12 @@ import config from '../config'
 import HandlerBehaviour from '../behaviours/HandlerBehaviour'
 import RunAwayBehaviour from '../behaviours/RunAwayBehavior'
 
-
+enum Side{
+    UP = 1,
+    DOWN = 2,
+    LEFT = 3,
+    RIGHT = 4
+}
 
 class EntityHandler {
     /**
@@ -66,6 +71,7 @@ class EntityHandler {
         this.width = width
         this.height = height
         this.tick = 0
+        this.performance = new EntityPerformance(this)
     }
 
     /**
@@ -81,10 +87,8 @@ class EntityHandler {
             entity.update(this)
         }
 
-        
-
         // Tick the performance handle
-        //this.performance.tick()
+        this.performance.tick()
     }
 
     /**
@@ -94,16 +98,34 @@ class EntityHandler {
     public removeEntities(count: number, instant = true){
         // Tear out entities
         const particlesToDestroy = this.entities.splice(0, count)
-        
         if(instant){
-            this.entities.forEach((entity) => {
+            particlesToDestroy.forEach((entity) => {
                 entity.destroy()
-            })  
+            })
+            this?.behaviour?.onEntitiesAdded([])
         } else {
             particlesToDestroy.forEach(entity => entity.setBehaviour(new RunAwayBehaviour(entity)))
             this.purgeQueue.push(...particlesToDestroy)
+            this?.behaviour?.onEntitiesAdded([])
+        }   
+    }
+
+    public addEntities(count: number){
+        for(let i = 0; i < count; i++){
+            this.createEntity(...this.getRandomPointOnEdge())
         }
-        
+
+        this.behaviour.onEntitiesAdded([])
+    }
+
+    /**
+     * Sets a target number of entites
+     */
+    public setEntities(count: number, instant: boolean = true){
+        const entityCount = this.getEntityCount()
+        count > entityCount ?
+            this.addEntities(count - entityCount) :
+            this.removeEntities(entityCount - count, instant)
     }
 
     /**
@@ -174,7 +196,7 @@ class EntityHandler {
     }
 
     /**
-     * Generates a random number between 0 and upper
+     * Generates a random number between 1 and upper
      * @param upper 
      * @returns The random number
      */
@@ -224,27 +246,6 @@ class EntityHandler {
         this.mouseY = y
     }
 
-
-    /**
-     * Pushes a given number of particles in random places on the canvas
-     * @param target Number of particles to generate
-     */
-    public generateRandom() {
-        if(this.performance === null){
-            this.performance = new EntityPerformance(this, config.particle_performace_cache_key, config.min_particles)
-        }
-//
-        let target = this.performance.has() ?  this.performance.load() : config.max_particles
-        //for (let i = 0; i < target; i++) {
-        for (let i = 0; i < 4000; i++) {
-            this.createEntity(
-                this.random(this.width),
-                this.random(this.height)
-            )
-        }
-    }
-    
-
     /**
      * Creates an enitity and registers it with the thing
      * @param x 
@@ -293,7 +294,31 @@ class EntityHandler {
     }
 
     public setBehaviour(behaviour: HandlerBehaviour){
+        console.log("Set behaviour")
         this.behaviour = behaviour
+        
+        // Register performance handler
+        this.performance.setConfig(behaviour.entityPerformanceConfig)
+
+        //  Pass in entities so that handlers can manage entities
+        this.behaviour.onEntitiesAdded(this.entities)
+
+        
+    }
+
+    protected getRandomPointOnEdge(): [number, number]{
+        const side = this.random(4)
+
+        switch(side){
+            case Side.UP: //UP
+                return [this.random(this.width), 0]
+            case Side.DOWN:
+                return [this.random(this.width), this.height]
+            case Side.LEFT:
+                return [0, this.random(this.height)]
+            case Side.RIGHT:
+                return [this.width, this.random(this.height)]
+        }
     }
 }
 

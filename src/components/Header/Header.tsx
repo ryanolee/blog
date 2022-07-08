@@ -65,19 +65,7 @@ export default ({children} :  React.PropsWithChildren<HeaderProps>) => {
 		if (container.current === null) {
 			return
 		}
-
-		let w = Math.round(container.current.clientWidth)
-		let h = Math.round(container.current.clientHeight)
-
-		app.current = new PIXI.Application({
-			backgroundColor: 0x000000,
-			antialias: true,
-			autoDensity: true,
-			width: w,
-			height: h,
-			resizeTo: container.current
-		});
-
+		
 		//particleBinding.init()
 		//particleBinding.enable()
 

@@ -125,6 +125,7 @@ class ParticleImage {
         for (let i = 0; i < this.ph.entities.length; i++) {
             //console.log(Math.ceil(((valid_points.length / this.particles.length) * i) - 1));
             let selectedPixel = valid_points[Math.floor(((valid_points.length / this.ph.entities.length) * i))];
+
             this.ph.entities[i].setBehaviour(new HoverAroundPointBehaviour(this.ph.entities[i], selectedPixel[0], selectedPixel[1]))
             if(forceVectorPush){
                 this.ph.entities[i].setForce(

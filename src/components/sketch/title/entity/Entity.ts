@@ -3,6 +3,7 @@ import randomcolor from 'randomcolor'
 import EntityBehaviour from "../behaviours/EntityBehaviour";
 import config from "../config";
 import EntityHandler from "./../handler/EntityHandler";
+import { isBoidBehaviour } from "../behaviours/BoidBehaviour";
 
 class Entity {
     /**

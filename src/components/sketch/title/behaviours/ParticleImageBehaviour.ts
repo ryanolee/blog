@@ -2,11 +2,20 @@ import { Slide } from "../../../../interfaces/Header"
 import EntityHandler from "../handler/EntityHandler"
 import ParticleImage from "../ParticleImage"
 import HandlerBehaviour from "./HandlerBehaviour"
+import Entity from "../entity/Entity"
+import HoverAroundPointBehaviour from "./HoverAroundPointBehaviour"
+import { EntityPerformanceConfig } from "../EntityPerformance"
 
 class ParticleImageBehaviour extends HandlerBehaviour {
     protected particleImage: ParticleImage
     protected slide: Slide | null
 
+    public entityPerformanceConfig: EntityPerformanceConfig = {
+        cacheKey: "ImagePerfCache-v3",
+        min: 1000,
+        max: 20000,
+        step: 250
+    }
     
     constructor(eh: EntityHandler, slide: Slide){
         super(eh)
@@ -21,6 +30,9 @@ class ParticleImageBehaviour extends HandlerBehaviour {
         this.particleImage.retargetParticles()
     }
 
+    public onEntitiesAdded(_entities: Entity[]){
+        this.particleImage.retargetParticles()
+    }
 
     /**
      * Loads a new image for a given target

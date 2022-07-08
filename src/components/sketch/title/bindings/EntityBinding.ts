@@ -4,6 +4,7 @@ import EntityHandler from "../handler/EntityHandler"
 import ParticleImageBehaviour from "../behaviours/ParticleImageBehaviour"
 import { slides } from "../../../Header/Header"
 import { debounce } from "@material-ui/core"
+import BoidHandlerBehaviour from "../behaviours/BoidHandlerBehaviour"
 
 /**
  * Mechanism for binding a handler to a given entity
@@ -13,7 +14,9 @@ export default class EntityBinding {
     protected app: MutableRefObject<PIXI.Application>
     protected handler: MutableRefObject<EntityHandler>
     protected enabled: boolean = false
-    protected resize = () => {};
+	protected resize = () => {};
+	protected windowFocus = () => {};
+	protected windowBlur = () => {};
 
     constructor(
         container: MutableRefObject<HTMLDivElement>,
@@ -67,13 +70,9 @@ export default class EntityBinding {
 		this.container.current.appendChild(this.app.current.view)
 		
 		this.handler.current = new EntityHandler(w, h, this.app.current)
-		this.handler.current.generateRandom()
         this.handler.current.removeEntities(400, false)
 
-		this.handler.current.setBehaviour(new ParticleImageBehaviour(
-            this.handler.current,
-            slides[0]
-        ))
+		this.handler.current.setBehaviour(new BoidHandlerBehaviour(this.handler.current))
 
 		//Desktop binding
 		this.app.current.view.addEventListener("mousemove", this.getListener((evt) => {
@@ -115,7 +114,7 @@ export default class EntityBinding {
 			this.handler.current.draw()
 		}))
 
-		this.resize = debounce(this.getListener(() => {
+		this.resize = debounce(() => {
 			// Force 16:9 aspect ratio
 			let w = Math.round(this.container.current.clientWidth)
 			let h = Math.round(this.container.current.clientHeight)
@@ -124,7 +123,7 @@ export default class EntityBinding {
 			this.app.current.view.height = h
 
 			this.handler.current.resize(w, h)
-		}), 200)
+		}, 200)
 
         this.app.current.stage.interactive = true
 		this.app.current.stage.on('pointermove', (e) => {
@@ -132,7 +131,20 @@ export default class EntityBinding {
 			this.handler.current.setMousePos(evtData.x, evtData.y)
 		})
 
+		this.windowFocus = () => {
+			this.enable()
+			this.app.current.ticker.start()
+		}
+
+		this.windowBlur = () => {
+			// Pause particles on blur
+			this.disable()
+			this.app.current.ticker.stop()
+		}
+
 		window.addEventListener('resize', this.resize)
+		window.addEventListener('focus', this.windowFocus)
+		window.addEventListener('blur', this.windowBlur)
     }
 
     teardown(){
@@ -142,6 +154,8 @@ export default class EntityBinding {
             this.handler.current = null
         }
         
-        window.removeEventListener('resize', this.resize)
+		window.removeEventListener('resize', this.resize)
+		window.removeEventListener('focus', this.windowFocus)
+		window.removeEventListener('blur', this.windowBlur)
     }
 }

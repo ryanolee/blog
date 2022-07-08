@@ -1,45 +1,51 @@
 import PVector from "pvectorjs";
 import config from "../config";
-import BoidHandler from "../handler/BoidHandler"
-import Entity from "./Entity";
+import EntityBehaviour from "./EntityBehaviour";
+import EntityHandler from "../handler/EntityHandler";
+import Entity from "../entity/Entity";
 
-export default class Boid extends Entity{
+export function isBoidBehaviour(entityBehaviour: EntityBehaviour): entityBehaviour is BoidBehaviour {
+    return !!entityBehaviour && "position" in entityBehaviour
+}
+
+export default class BoidBehaviour extends EntityBehaviour {
     public position: PVector
     public velocity: PVector
     public acceleration: PVector
 
     public rotation: number;
 
-    constructor(x: number, y: number, xv: number = 0, yv: number = 0){
-        super(x, y, xv, yv)
-        this.position = new PVector(x, y)
-        this.velocity = new PVector(0, 0)
+    constructor(entity: Entity){
+        super(entity)
+        this.position = new PVector(this.entity.x, this.entity.y)
+        this.velocity = new PVector(this.entity.xv, this.entity.yv)
         this.acceleration = new PVector()
-        this.rotation = Math.floor(Math.random() * 360)
     }
 
 
-    public update(bh: BoidHandler): void {
-        const closestBoids : Boid[] = bh.getEntitiesInRange(this.position.x, this.position.y, config.boid_sight_range, true) as Boid[]
-        //
-        //if(bh.entities[0].x === this.x){
-        //    console.log(closestBoids)
-        //}
-        
+    public update(bh: EntityHandler): void {
+
+        this.velocity.x = this.entity.xv
+        this.velocity.y = this.entity.yv
+
+        const closestBoids: BoidBehaviour[] = bh.getEntitiesInRange(this.position.x, this.position.y, config.boid_sight_range, true)
+            .map(entity => entity.behaviour)
+            .filter(isBoidBehaviour)
+  
         //////////////////
         //// separation //
         //////////////////
         let separation = this.separate(closestBoids).mult(0.2)
-//
+
         /////////////////
         //// alignment //
         /////////////////
         let alignment = this.align(closestBoids).mult(0.2)
-//
+
         ////////////////
         //// cohesion //
         ////////////////
-        let cohesion = this.cohesion(closestBoids).mult(0.2)
+        let cohesion = this.cohesion(closestBoids).mult(0.1)
 
 
         this.acceleration
@@ -49,9 +55,10 @@ export default class Boid extends Entity{
             .add(alignment)
             .add(cohesion)
         
+        this.move(bh)
     }
 
-    move(bh: BoidHandler){
+    move(bh: EntityHandler){
         this.velocity
             .add(this.acceleration)
             .maxMag(config.boid_speed)
@@ -63,15 +70,19 @@ export default class Boid extends Entity{
         // Wrap screen
         this.position.y = (this.position.y + h) % h
         this.position.x = (this.position.x + w) % w
-        this.x = this.position.x
-        this.y = this.position.y
+
+        this.entity.x = this.position.x
+        this.entity.y = this.position.y
+        this.entity.xv = this.velocity.x
+        this.entity.yv = this.velocity.y
+
         // Reset accelaration
         this.acceleration.mult(0)//.maxMag(5)
     }
 
 
 
-    protected separate(boids: Boid[]): PVector{
+    protected separate(boids: BoidBehaviour[]): PVector{
         let avoidence = new PVector();
         let avoidenceCount = 0;
 
@@ -103,7 +114,7 @@ export default class Boid extends Entity{
         return avoidence
     }
 
-    protected align(boids: Boid[]): PVector{
+    protected align(boids: BoidBehaviour[]): PVector{
         const average = new PVector()
 
         if(boids.length === 0){
@@ -124,7 +135,7 @@ export default class Boid extends Entity{
         return target
     }
 
-    protected cohesion(boids: Boid[]): PVector {
+    protected cohesion(boids: BoidBehaviour[]): PVector {
         const cohesion = new PVector() 
 
         if(boids.length === 0){
@@ -147,22 +158,5 @@ export default class Boid extends Entity{
         let steer = desired.sub(this.velocity)
         steer.maxMag(config.boid_speed)
         return steer
-    }
-
-    /**
-     * Update graphic state to trigger redraw
-     */
-     draw() {
-        this.graphic.clear()
-        this.graphic.beginFill(this.color)
-        this.graphic.drawCircle(this.position.x, this.position.y, config.particle_size)
-        this.graphic.lineStyle(config.particle_size, this.color)
-        this.graphic.moveTo(this.x, this.y)
-        this.graphic.lineTo(this.x + this.xv, this.y + this.yv)
-        this.graphic.endFill()  
-    }
-
-    protected updateTurn(){
-        this.rotation
     }
 }
