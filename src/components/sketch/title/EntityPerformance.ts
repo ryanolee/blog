@@ -69,17 +69,17 @@ export default class EntityPerformance {
     /**
      * The minumum count of entities that can be rendered
      */
-    protected minimum: number|null = null
+    protected minimum: number = 10000
 
     /**
      * Maximum number of entities that can be rendered
      */
-    protected maximum: number|null = null
+    protected maximum: number = 0
 
     /**
      * The steps to take
      */
-    protected step: number|null 
+    protected step: number = 20
 
     /**
      * Keep track of the directions we are going in so we do not get stuck
@@ -126,6 +126,10 @@ export default class EntityPerformance {
      * Makes choice on which direction to travel or if to stop
      */
     protected makeChoice() {
+        if(this.maximum === null || this.maximum === null){
+            return;
+        }
+
         // Don't bother if our sample size is too small
         if(this.frameTimes.length < SAMPLE_SIZE){
             return

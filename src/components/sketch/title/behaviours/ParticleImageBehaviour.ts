@@ -13,7 +13,7 @@ class ParticleImageBehaviour extends HandlerBehaviour {
     public entityPerformanceConfig: EntityPerformanceConfig = {
         cacheKey: "ImagePerfCache-v3",
         min: 1000,
-        max: 20000,
+        max: 5000,
         step: 250
     }
     

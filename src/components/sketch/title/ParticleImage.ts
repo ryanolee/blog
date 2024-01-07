@@ -12,7 +12,7 @@ class ParticleImage {
     /**
      * Store frame data
      */
-    protected frameData:  [number, number][]
+    protected frameData:  number[][]
 
     /**
      * Stores the path to the currently selected image as a sting
@@ -46,9 +46,10 @@ class ParticleImage {
             //Inject a hidden canvas to handle our image loading / processing
             let dataFor = md5(imagePath)
             document.body.insertAdjacentHTML('beforeend', `<canvas style="display: none" data-for="${dataFor}"></canvas>`)
-            let targetCanvas: HTMLCanvasElement = document.querySelector(`canvas[data-for="${dataFor}"]`)
+            let targetCanvas: HTMLCanvasElement | null = document.querySelector(`canvas[data-for="${dataFor}"]`)
             if (targetCanvas === null) {
                 console.warn(`Failed to load target ${imagePath} (canvas not found)`)
+                return
             }
 
             // Resize canvas to fit loaded image
@@ -57,8 +58,11 @@ class ParticleImage {
 
             //Draw image to canvas
             let context = targetCanvas.getContext('2d');
+
+            if(context == null) return
+
             context.drawImage(tempImage, 0, 0);
-            let dataOrig = context.getImageData(0, 0, tempImage.width, tempImage.height).data;
+            let dataOrig: Uint8ClampedArray|null = context.getImageData(0, 0, tempImage.width, tempImage.height).data;
             
             //Take copies of the new image data values
             this.imageWidth = tempImage.width
@@ -66,8 +70,8 @@ class ParticleImage {
 
             targetCanvas.remove()
 
-            let fourths = [];
-            let data = [];
+            let fourths: number[]|null = [];
+            let data: number[][]|null = [];
 
             // Only read every 4th byte of the RGBA encoding
             for (let i = 0; i < dataOrig.length; i += 4) {//Remove RGBA color encoding
@@ -103,7 +107,7 @@ class ParticleImage {
      * @returns 
      */
     retargetParticles(forceVectorPush: boolean = false){
-        if (this.frameData === []){
+        if (this.frameData.length === 0){
             return
         }
 
@@ -116,7 +120,7 @@ class ParticleImage {
             }
         }
 
-        // Fall out if no valid points are given
+        // Fail out if no valid points are given
         if(valid_points.length < 2){
             return
         }

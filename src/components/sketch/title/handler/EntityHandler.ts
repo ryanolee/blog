@@ -88,7 +88,9 @@ class EntityHandler {
         }
 
         // Tick the performance handle
-        this.performance.tick()
+        if(this.performance){
+            this.performance.tick()
+        }
     }
 
     /**
@@ -115,7 +117,7 @@ class EntityHandler {
             this.createEntity(...this.getRandomPointOnEdge())
         }
 
-        this.behaviour.onEntitiesAdded([])
+        this.behaviour?.onEntitiesAdded([])
     }
 
     /**
@@ -281,7 +283,7 @@ class EntityHandler {
     public resize(width: number, height: number){
         this.width = width
         this.height = height
-        this?.behaviour.onResize()
+        this.behaviour?.onResize()
         
     }
 
@@ -289,7 +291,7 @@ class EntityHandler {
      * Gets the current handler behaviour
      * @returns behaviour
      */
-    public getBehaviour(): HandlerBehaviour{
+    public getBehaviour(): HandlerBehaviour|null{
         return this.behaviour
     }
 
@@ -298,7 +300,7 @@ class EntityHandler {
         this.behaviour = behaviour
         
         // Register performance handler
-        this.performance.setConfig(behaviour.entityPerformanceConfig)
+        this.performance?.setConfig(behaviour.entityPerformanceConfig)
 
         //  Pass in entities so that handlers can manage entities
         this.behaviour.onEntitiesAdded(this.entities)
@@ -319,6 +321,9 @@ class EntityHandler {
             case Side.RIGHT:
                 return [this.width, this.random(this.height)]
         }
+
+        throw new Error("Invalid side")
+    
     }
 }
 

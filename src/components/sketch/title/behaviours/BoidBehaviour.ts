@@ -29,7 +29,7 @@ export default class BoidBehaviour extends EntityBehaviour {
         this.velocity.y = this.entity.yv
 
         const closestBoids: BoidBehaviour[] = bh.getEntitiesInRange(this.position.x, this.position.y, config.boid_sight_range, true)
-            .map(entity => entity.behaviour)
+            .map(entity => entity.behaviour as EntityBehaviour)
             .filter(isBoidBehaviour)
   
         //////////////////
@@ -40,12 +40,12 @@ export default class BoidBehaviour extends EntityBehaviour {
         /////////////////
         //// alignment //
         /////////////////
-        let alignment = this.align(closestBoids).mult(0.2)
+        let alignment = this.align(closestBoids).mult(0.1)
 
         ////////////////
         //// cohesion //
         ////////////////
-        let cohesion = this.cohesion(closestBoids).mult(0.1)
+        let cohesion = this.cohesion(closestBoids).mult(0.2)
 
 
         this.acceleration
